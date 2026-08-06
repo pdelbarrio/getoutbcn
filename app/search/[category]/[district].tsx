@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { spotsService } from "../../../services/supabase/spots";
 import { Spot } from "../../../services/supabase/types";
 import SpotCard from "../../../components/SpotCard";
-import { Colors, Typography } from "../../../constants/theme";
+import { Colors, Typography } from "../../../constants/Theme";
 
 export default function CategoryDistrictListScreen() {
   const { category, district } = useLocalSearchParams();
@@ -20,7 +20,7 @@ export default function CategoryDistrictListScreen() {
       setLoading(true);
       const data = await spotsService.getByCategoryAndDistrict(
         category as string,
-        district as string
+        district as string,
       );
       setSpots(data);
     } catch (error) {

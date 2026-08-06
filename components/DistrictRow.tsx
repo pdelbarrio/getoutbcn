@@ -6,7 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { Colors, Typography, BorderRadius } from "../constants/theme";
+import { Colors, Typography, BorderRadius } from "../constants/Theme";
 import { DISTRICTS } from "../constants/Districts";
 
 interface DistrictRowProps {

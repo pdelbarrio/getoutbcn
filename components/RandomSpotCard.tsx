@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
-import { Colors, Typography, BorderRadius, Spacing } from "../constants/theme";
+import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
 
 interface RandomSpotCardProps {
   spot: Spot;

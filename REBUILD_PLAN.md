@@ -1058,6 +1058,128 @@ export default function ProfileScreen() {
 
 ---
 
+### 4.4 Login social con Google (solo Android)
+
+**Referencia:** `specs/flows.md` sección 6.4 (Social Login) y `components.md` (SocialLoginButton).
+
+#### Requisitos técnicos
+
+- La autenticación social **solo funciona en development builds**, no en Expo Go.
+- Ya tienes las credenciales configuradas en Supabase (Google Provider activado) y en tu `.env` (`EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_ANON_KEY` son suficientes).
+
+#### Librería recomendada
+
+`expo-auth-session` + `expo-web-browser` (ambas de Expo) + `@supabase/supabase-js` (ya instalada). Esta es la combinación oficial y más documentada.
+
+#### Pasos a seguir en el Sprint 4
+
+1. **Instalar las dependencias necesarias:**
+
+   ```bash
+   npx expo install expo-auth-session expo-web-browser
+   ```
+
+2. **Configurar `expo-web-browser` en `app.json`:**
+
+   ```json
+   {
+     "expo": {
+       // ... tu configuración existente
+       "plugins": [
+         [
+           "expo-web-browser",
+           {
+             "experimentalLauncherActivity": false
+           }
+         ]
+       ]
+     }
+   }
+   ```
+
+3. **Crear el servicio de autenticación social:**
+   Crea `services/supabase/social-auth.ts`:
+
+   ```typescript
+   import * as WebBrowser from "expo-web-browser";
+   import * as AuthSession from "expo-auth-session";
+   import { supabase } from "./client";
+
+   WebBrowser.maybeCompleteAuthSession();
+
+   export const socialAuthService = {
+     async signInWithGoogle(): Promise<void> {
+       const redirectUri = AuthSession.makeRedirectUri({
+         scheme: "getoutbcn", // Debe coincidir con el scheme en app.json
+       });
+
+       const { data, error } = await supabase.auth.signInWithOAuth({
+         provider: "google",
+         options: {
+           redirectTo: redirectUri,
+           skipBrowserRedirect: true,
+         },
+       });
+
+       if (error) throw error;
+       if (!data.url)
+         throw new Error("No se pudo obtener la URL de autenticación");
+
+       const result = await WebBrowser.openAuthSessionAsync(
+         data.url,
+         redirectUri,
+       );
+
+       if (result.type === "success") {
+         // La sesión se actualiza automáticamente en el cliente de Supabase
+         // gracias a la configuración de redirectTo y la URL de callback.
+         // Podemos verificar la sesión con supabase.auth.getSession()
+       } else {
+         throw new Error("Autenticación cancelada o fallida");
+       }
+     },
+   };
+   ```
+
+4. **Añadir el botón de Google en `app/login.tsx`:**
+
+   ```tsx
+   import { socialAuthService } from "../services/supabase/social-auth";
+
+   // ... dentro del componente
+   async function handleGoogleSignIn() {
+     try {
+       await socialAuthService.signInWithGoogle();
+       router.replace("/");
+     } catch (error) {
+       setError(error.message);
+     }
+   }
+
+   // ... en el render
+   <Button title="Iniciar sesión con Google" onPress={handleGoogleSignIn} />;
+   ```
+
+5. **Proteger rutas y ajustar comportamiento:**
+   - `add-spot` y `profile` deben redirigir a `login` si `!user`.
+   - En SpotDetail, `FavoriteButton` solo visible si `user` existe.
+   - En Home, el botón "Iniciar sesión" solo aparece si `!user`; si `user` existe, mostrar "Añadir spot" y un acceso a `profile`.
+
+#### Construcción del build y gestión del tiempo
+
+- **El build debe ser iniciado por el usuario** (no por OpenCode). Una vez que hayas terminado la implementación, notifica al usuario para que pueda ejecutar el build.
+- **Durante la espera del build** (puede tardar horas en el plan gratuito de EAS), se recomienda:
+  - Revisar el código generado para detectar posibles mejoras.
+  - Preparar datos de prueba en Supabase (insertar spots, categorías, etc.) para verificar la funcionalidad completa tras el build.
+  - Documentar cualquier cambio o decisión tomada durante el sprint.
+
+#### Pruebas obligatorias
+
+- Después del build, instala el APK en un dispositivo físico y prueba el flujo completo de login con Google.
+- **Importante:** El flujo **fallará en Expo Go**, es normal y esperado. Solo funciona en development builds.
+
+---
+
 ## 📝 FASE 5: Pantallas Autenticadas
 
 ### 5.1 AddSpot Screen (`app/add-spot.tsx`)

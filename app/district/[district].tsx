@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { spotsService } from "../../services/supabase/spots";
 import { Spot } from "../../services/supabase/types";
 import SpotCard from "../../components/SpotCard";
-import { Colors, Typography } from "../../constants/theme";
+import { Colors, Typography } from "../../constants/Theme";
 
 export default function DistrictListScreen() {
   const { district } = useLocalSearchParams();

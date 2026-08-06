@@ -7,7 +7,7 @@ import CategoryRow from "../components/CategoryRow";
 import DistrictRow from "../components/DistrictRow";
 import SearchButton from "../components/SearchButton";
 import RandomSpotCard from "../components/RandomSpotCard";
-import { Colors } from "../constants/theme";
+import { Colors } from "../constants/Theme";
 
 export default function HomeScreen() {
   const router = useRouter();

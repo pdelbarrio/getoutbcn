@@ -14,7 +14,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { Colors, Typography, BorderRadius } from "../constants/theme";
+import { Colors, Typography, BorderRadius } from "../constants/Theme";
 import { CATEGORIES } from "../constants/Categories";
 
 interface CategoryRowProps {
@@ -36,7 +36,7 @@ export default function CategoryRow({
         easing: Easing.linear,
       }),
       -1,
-      false
+      false,
     );
   }, []);
 

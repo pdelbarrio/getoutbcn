@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
-import { Colors, Typography, BorderRadius } from "../constants/theme";
+import { Colors, Typography, BorderRadius } from "../constants/Theme";
 
 interface SearchButtonProps {
   onPress: () => void;
