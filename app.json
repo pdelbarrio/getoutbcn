@@ -35,6 +35,16 @@
         {
           "experimentalLauncherActivity": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "googleMaps": {
+              "apiKey": "AIzaSyAFH0OTVpPC_u2rOirOsrzIB_POARrailE"
+            }
+          }
+        }
       ]
     ],
     "extra": {
