@@ -8,11 +8,16 @@ export const authService = {
   },
 
   async signIn(email: string, password: string) {
+    console.log("🟢 Intentando signIn con email:", email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      console.error("🔴 Error en signIn:", error);
+      throw error;
+    }
+    console.log("✅ signIn exitoso, session:", data.session);
     return data;
   },
 
