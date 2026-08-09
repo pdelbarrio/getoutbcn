@@ -1104,15 +1104,15 @@ export default function ProfileScreen() {
    import * as WebBrowser from "expo-web-browser";
    import * as AuthSession from "expo-auth-session";
    import { supabase } from "./client";
-
+   
    WebBrowser.maybeCompleteAuthSession();
-
+   
    export const socialAuthService = {
      async signInWithGoogle(): Promise<void> {
        const redirectUri = AuthSession.makeRedirectUri({
          scheme: "getoutbcn", // Debe coincidir con el scheme en app.json
        });
-
+   
        const { data, error } = await supabase.auth.signInWithOAuth({
          provider: "google",
          options: {
@@ -1120,16 +1120,16 @@ export default function ProfileScreen() {
            skipBrowserRedirect: true,
          },
        });
-
+   
        if (error) throw error;
        if (!data.url)
          throw new Error("No se pudo obtener la URL de autenticación");
-
+   
        const result = await WebBrowser.openAuthSessionAsync(
          data.url,
          redirectUri,
        );
-
+   
        if (result.type === "success") {
          // La sesión se actualiza automáticamente en el cliente de Supabase
          // gracias a la configuración de redirectTo y la URL de callback.
@@ -1450,10 +1450,6 @@ eas build --platform android --profile production
 
 ### 7.4 Anexo I: Lecciones Aprendidas y Guardarraíles
 
-Este anexo documenta los problemas críticos encontrados durante el desarrollo y sus soluciones definitivas, para que no tengas que volver a pasar por ellos.
-
----
-
 #### 🚨 Problema 1: Expo SDK 57 + AJV + Windows (Primer proyecto)
 
 **Contexto:**
@@ -1554,6 +1550,59 @@ Antes de hacer un build, asegúrate de que:
 □ app.config.js usa el plugin personalizado.
 □ La variable EXPO_PUBLIC_GOOGLE_MAPS_API_KEY está configurada en EAS (dashboard de Expo) y en tu .env local.
 □ El plugin personalizado funciona localmente (ejecuta npx expo prebuild --platform android --clean y verifica el AndroidManifest.xml).
+
+#### Anexo 2: Edge Function para subida de imágenes (Sprint 5)
+
+**Problema inicial:**
+
+Al intentar subir una imagen a Supabase Storage desde la app, se producía un error:
+
+Network request failed
+
+**Causa raíz:**
+
+El método directo `supabase.storage.from("spots").upload(...)` falla en dispositivos móviles por problemas de CORS y autenticación en el entorno nativo.
+
+**Solución adoptada:**
+
+1. **Crear una Edge Function** en Supabase (`generate-upload-url`) que genera una **URL firmada (signed URL)** de un solo uso.
+2. **Modificar la app** para que, en lugar de subir la imagen directamente:
+   - Solicite la URL firmada a la Edge Function (pasando `fileName` y `userId`).
+   - Realice un `PUT` a esa URL con el blob de la imagen.
+3. **Obtener la URL pública** del archivo subido usando `supabase.storage.from("spots").getPublicUrl(path)`.
+
+**Archivos clave:**
+
+- `supabase/functions/generate-upload-url/index.ts` → Código de la Edge Function.
+- `services/supabase/storage.ts` → Método `uploadSpotImage` modificado para usar la URL firmada.
+- Secrets en Supabase: `SB_URL` y `SERVICE_ROLE_KEY` (configurados con `supabase secrets set`).
+
+**Comandos de despliegue:**
+
+```bash
+# Configurar secrets en Supabase (nombres personalizados)
+supabase secrets set SB_URL="https://tu-proyecto.supabase.co"
+supabase secrets set SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Desplegar la función
+supabase functions deploy generate-upload-url --project-ref tu-project-ref
+```
+
+**Lección aprendida:**
+
+- En entornos móviles, las URLs firmadas son más fiables que la subida directa.
+- Centralizar la lógica de subida en una Edge Function mejora la seguridad y el mantenimiento.
+- No es necesario hacer un nuevo build de la app para probar cambios en la función; solo desplegar la función y recargar la app.
+
+**Verificación rápida:**
+
+□ La función está desplegada en Supabase (visible en Edge Functions).
+
+□ La app llama a la URL de producción de la función (no a `localhost`).
+
+□ El usuario está autenticado antes de intentar subir una imagen.
+
+□ La URL pública generada es accesible desde el navegador.
 
 ---
 

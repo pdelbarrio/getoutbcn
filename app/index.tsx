@@ -8,7 +8,10 @@ import CategoryRow from "../components/CategoryRow";
 import DistrictRow from "../components/DistrictRow";
 import SearchButton from "../components/SearchButton";
 import RandomSpotCard from "../components/RandomSpotCard";
+import NearbySpotCard from "../components/NearbySpotCard";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
+import * as Location from "expo-location";
+import { findNearestSpot } from "../utils/geolocation";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -16,9 +19,13 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [randomSpot, setRandomSpot] = useState<Spot | null>(null);
+  const [nearbySpot, setNearbySpot] = useState<Spot | null>(null);
+  const [nearbyDistance, setNearbyDistance] = useState<number | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     loadRandomSpot();
+    getUserLocation();
   }, []);
 
   async function loadRandomSpot() {
@@ -27,6 +34,45 @@ export default function HomeScreen() {
       setRandomSpot(spot);
     } catch (error) {
       console.error("Error loading random spot:", error);
+    }
+  }
+
+  async function getUserLocation() {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        console.log('Location permission not granted');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
+      // Load nearby spot once we have location
+      loadNearbySpot(location.coords.latitude, location.coords.longitude);
+    } catch (error) {
+      console.error("Error getting user location:", error);
+    }
+  }
+
+  async function loadNearbySpot(userLat: number, userLon: number) {
+    try {
+      const allSpots = await spotsService.getAll();
+      const nearest = findNearestSpot(userLat, userLon, allSpots);
+      
+      if (nearest) {
+        setNearbySpot(nearest.spot);
+        setNearbyDistance(nearest.distance);
+      }
+    } catch (error) {
+      console.error("Error loading nearby spot:", error);
     }
   }
 
@@ -57,10 +103,16 @@ export default function HomeScreen() {
             ) : (
               <View style={styles.userButtons}>
                 <TouchableOpacity
+                  style={styles.favoritesButton}
+                  onPress={() => router.push("/favorites")}
+                >
+                  <Text style={styles.favoritesButtonText}>❤</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={styles.addSpotButton}
                   onPress={() => router.push("/add-spot")}
                 >
-                  <Text style={styles.addSpotButtonText}>Añadir spot</Text>
+                  <Text style={styles.addSpotButtonText}>+ Spot</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.profileButton}
@@ -87,6 +139,8 @@ export default function HomeScreen() {
           onPress={handleSearch}
           disabled={!selectedCategory && !selectedDistrict}
         />
+
+        {nearbySpot && <NearbySpotCard spot={nearbySpot} distance={nearbyDistance} />}
 
         {randomSpot && <RandomSpotCard spot={randomSpot} />}
       </ScrollView>
@@ -133,22 +187,34 @@ const styles = StyleSheet.create({
   userButtons: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
+  },
+  favoritesButton: {
+    backgroundColor: Colors.surfaceHigh,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.button,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  favoritesButtonText: {
+    color: Colors.primary,
+    fontSize: 14,
   },
   addSpotButton: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: BorderRadius.button,
   },
   addSpotButtonText: {
     color: Colors.onPrimary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
   },
   profileButton: {
     backgroundColor: Colors.surfaceHigh,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: BorderRadius.button,
     borderWidth: 1,
@@ -156,7 +222,7 @@ const styles = StyleSheet.create({
   },
   profileButtonText: {
     color: Colors.primary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
   },
 });
