@@ -1448,6 +1448,115 @@ eas build --platform android --profile production
 
 ---
 
+### 7.4 Anexo I: Lecciones Aprendidas y Guardarraíles
+
+Este anexo documenta los problemas críticos encontrados durante el desarrollo y sus soluciones definitivas, para que no tengas que volver a pasar por ellos.
+
+---
+
+#### 🚨 Problema 1: Expo SDK 57 + AJV + Windows (Primer proyecto)
+
+**Contexto:**
+
+En el primer intento de proyecto, usamos Expo SDK 57 con `expo-router` y el CLI moderno. Al intentar hacer un build o arrancar el servidor de desarrollo, aparecía el error:
+Cannot find module 'ajv/dist/compile/codegen'
+
+text
+
+**Causa raíz:**
+
+- El CLI moderno de Expo activa automáticamente el plugin de `expo-router`.
+- Ese plugin carga `schema-utils`, que a su vez carga `ajv-keywords`, que intenta cargar `ajv/dist/compile/codegen`.
+- En Windows, `ajv` v8 no tiene esa ruta, por lo que falla.
+- Este problema **no ocurre en SDK 54/55**, porque usan un CLI legacy y `expo-router` v2.
+
+**Solución adoptada:**
+
+- **Descartar SDK 57** y **usar Expo SDK 54** (estable y compatible con Windows).
+- **No usar `expo-router` v3.x** (que es el que activa el plugin problemático). En SDK 54 se usa `expo-router` v6.x, que es compatible y no causa este error.
+
+**Lección aprendida:**
+
+- **Siempre usar Expo SDK 54 o superior (pero evitando SDK 57 si se trabaja en Windows).**
+- **Si el error de AJV aparece, es síntoma de estar usando SDK 56/57 con el CLI moderno. La solución es bajar a SDK 54.**
+
+---
+
+#### 🗺️ Problema 2: Inyección de API Key de Google Maps en Android
+
+**Contexto:**
+
+Al intentar mostrar un mapa en `SpotDetail`, la app fallaba con:
+java.lang.IllegalStateException: API key not found. Check that <meta-data android:name="com.google.android.geo.API_KEY" ...> is in the <application> element.
+
+text
+
+**Causa raíz:**
+
+- El plugin `expo-build-properties` **no inyecta la API key en el `AndroidManifest.xml`**. Solo sirve para configurar propiedades de compilación (`minSdk`, `targetSdk`, etc.).
+- El plugin de `react-native-maps` no funciona correctamente en la versión 1.20.1 con Expo SDK 54.
+- La única forma fiable de inyectar la clave en el manifest es mediante un **plugin personalizado** que modifique el `AndroidManifest.xml`.
+
+**Solución adoptada:**
+
+1. **Crear un plugin personalizado** en `plugins/withGoogleMapsApiKey.js` que añade el meta-data en el manifest.
+2. **Usar ese plugin en `app.config.js`**, inyectando la clave desde `process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
+3. **No hardcodear la clave en ningún archivo** (ni `app.json`, ni `app.config.js`, ni `eas.json`).
+4. **No subir la carpeta `android/` al repositorio** (añadirla a `.gitignore`). La carpeta se genera automáticamente con el prebuild.
+
+**Archivos clave:**
+
+- `plugins/withGoogleMapsApiKey.js` → Plugin personalizado.
+- `app.config.js` → Configuración dinámica que aplica el plugin.
+- `.gitignore` → Debe incluir `android/` y `ios/`.
+
+**Flujo de trabajo correcto:**
+
+1. Localmente, si necesitas regenerar la carpeta `android/`:
+   ```bash
+   npx expo prebuild --platform android --clean
+   No commitees la carpeta android/. Solo commitea app.config.js y el plugin.
+   ```
+
+En EAS, si no encuentra la carpeta android/, ejecutará automáticamente el prebuild durante el build, inyectando la clave correctamente.
+
+Lección aprendida:
+
+Nunca usar expo-build-properties para inyectar la API key.
+
+Siempre usar el plugin personalizado para modificar el AndroidManifest.xml.
+
+Mantener la carpeta android/ en .gitignore para no exponer la clave.
+
+Si el mapa falla por API key, verificar que el AndroidManifest.xml contiene la clave y que el plugin se está aplicando.
+
+🔒 ### Reglas de oro para el futuro
+Nunca hardcodear claves o secretos en el repositorio. Usar siempre variables de entorno (process.env) y, en el caso de EAS, configurarlas en el dashboard de Expo.
+
+No subir carpetas nativas (android/, ios/) al repositorio. Deben estar en .gitignore.
+
+Si un plugin no funciona, crear un plugin personalizado. Es más fiable y te da control total.
+
+Documentar cada error y su solución en este anexo para no repetir el mismo proceso de depuración.
+
+📂 Estructura de archivos para la API key
+text
+getoutbcn/
+├── .gitignore # Debe contener "android/" y "ios/"
+├── app.config.js # Configuración dinámica con el plugin personalizado
+├── plugins/
+│ └── withGoogleMapsApiKey.js # Plugin que inyecta la API key en el manifest
+└── .env # Contiene EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+✅ Verificación rápida
+Antes de hacer un build, asegúrate de que:
+
+□ android/ está en .gitignore.
+□ app.config.js usa el plugin personalizado.
+□ La variable EXPO_PUBLIC_GOOGLE_MAPS_API_KEY está configurada en EAS (dashboard de Expo) y en tu .env local.
+□ El plugin personalizado funciona localmente (ejecuta npx expo prebuild --platform android --clean y verifica el AndroidManifest.xml).
+
+---
+
 ## 📊 Orden de Ejecución Recomendado (Sprints)
 
 ### Sprint 1: Foundation (3-4 horas)
