@@ -1,28 +1,35 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Typography, BorderRadius } from '../constants/Theme';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
 
 type CategoryTagProps = {
   category: string;
 };
 
 export default function CategoryTag({ category }: CategoryTagProps) {
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push(`/category/${category}`);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{category.toUpperCase()}</Text>
-    </View>
+    <TouchableOpacity style={styles.button} onPress={handlePress} activeOpacity={0.7}>
+      <Text style={styles.text}>{category}</Text>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  button: {
     backgroundColor: Colors.surfaceHigh,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: BorderRadius.tag,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: BorderRadius.button,
     alignSelf: 'flex-start',
   },
   text: {
-    ...Typography.industrialLabel,
-    color: Colors.primary,
+    ...Typography.bodyHighlight,
+    color: Colors.textSecondary,
   },
 });

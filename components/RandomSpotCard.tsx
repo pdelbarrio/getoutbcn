@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
 import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import AnimatedButton from "./AnimatedButton";
 
 interface RandomSpotCardProps {
   spot: Spot;
@@ -17,8 +18,8 @@ export default function RandomSpotCard({ spot }: RandomSpotCardProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>RANDOM SPOT</Text>
-      <TouchableOpacity style={styles.card} onPress={handlePress}>
+      <Text style={styles.label}>LLOC ALEATORI</Text>
+      <AnimatedButton style={styles.card} onPress={handlePress}>
         <Image
           source={{ uri: spot.image_url }}
           style={styles.image}
@@ -35,7 +36,7 @@ export default function RandomSpotCard({ spot }: RandomSpotCardProps) {
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </AnimatedButton>
     </View>
   );
 }
@@ -54,6 +55,8 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: BorderRadius.card,
     overflow: "hidden",
+    borderWidth: 0.5,
+    borderColor: Colors.primary,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

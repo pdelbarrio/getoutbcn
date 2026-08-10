@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { spotsService } from "../services/supabase/spots";
 import { Spot } from "../services/supabase/types";
 import { useAuth } from "../contexts/AuthContext";
@@ -88,6 +89,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.title}>GetOutBCN</Text>
@@ -98,27 +100,29 @@ export default function HomeScreen() {
                 style={styles.loginButton}
                 onPress={() => router.push("/login")}
               >
-                <Text style={styles.loginButtonText}>Iniciar sesión</Text>
+                <Text style={styles.loginButtonText}>Iniciar sessió</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.userButtons}>
                 <TouchableOpacity
-                  style={styles.favoritesButton}
-                  onPress={() => router.push("/favorites")}
-                >
-                  <Text style={styles.favoritesButtonText}>❤</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
                   style={styles.addSpotButton}
                   onPress={() => router.push("/add-spot")}
                 >
-                  <Text style={styles.addSpotButtonText}>+ Spot</Text>
+                  <Text style={styles.addSpotButtonText}>+ Lloc</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.profileButton}
-                  onPress={() => router.push("/profile")}
+                  style={styles.iconButton}
+                  onPress={() => router.push("/favorites")}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.profileButtonText}>Perfil</Text>
+                  <Ionicons name="bookmark-outline" size={20} color={Colors.primary} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => router.push("/profile")}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="person-circle-outline" size={24} color={Colors.primary} />
                 </TouchableOpacity>
               </View>
             )}
@@ -187,42 +191,27 @@ const styles = StyleSheet.create({
   userButtons: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-  },
-  favoritesButton: {
-    backgroundColor: Colors.surfaceHigh,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: BorderRadius.button,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  favoritesButtonText: {
-    color: Colors.primary,
-    fontSize: 14,
+    gap: 8,
   },
   addSpotButton: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: BorderRadius.button,
   },
   addSpotButtonText: {
     color: Colors.onPrimary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "700",
   },
-  profileButton: {
+  iconButton: {
+    width: 36,
+    height: 36,
     backgroundColor: Colors.surfaceHigh,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: BorderRadius.button,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: Colors.primary,
-  },
-  profileButtonText: {
-    color: Colors.primary,
-    fontSize: 11,
-    fontWeight: "700",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

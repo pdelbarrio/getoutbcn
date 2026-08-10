@@ -1677,6 +1677,34 @@ supabase functions deploy generate-upload-url --project-ref tu-project-ref
 
 **Tiempo Total Estimado: 19-26 horas**
 
+### **Retocar:**
+
+- Los botones de categorias y distritos de la pantalla principal deben poder seleccionarse con un click y deseseleccionarse con otro click (toggle), por ejemplo si se selecciona una categoria y luego un distrito, poder clicar al distrito de nuevo para que "se apague" y entoncer buscar todas las categorias sin filtrar por distrito, y viceversa.
+- Hay que corregir estéticamente el corazon de favoritos, poner otro icono, el de bookmark que tiene forma de punto de libro .
+- En general coger el diseño de stitch y ver en qué podemos mejorar para que se parezca más 
+- https://stitch.withgoogle.com/projects/3943882300834945234?pli=1
+- La SpotCard, la que solo muestra foto, nombre y categoria/distrito, la que se ve en los listados de búsqueda, tiene un pequeño borde alrededor, ultrafino, lo justo para que se note un pequeño realce. Los botones de categoria y distrito tambien pueden tener un borde para que todo sea coherente.
+- El boton de favorito/like/bookmark en la pantalla de detalle no está bien situado abajo. Quizá en el frame superior, encima de la imagen, donde está l flecha que lleva a la pantalla principal, ahí podemos poner después de la flecha un 'Detall del lloc' luego un icono de compartir (valora si es posible compartir un spot fuera de la app) y ahi el botón/icono de bookmark.
+- Todas las pantallas tienen un frame superior blanco, que no sé a qué se debe donde pone 'index', o 'add-spot', 'profile', etc No sé si es un tema del build del android pero se tendría que ver del mismo color que la app, no se tendría que ver blanco.
+- En la vista de detalle de un spot se ve la categoria y el distrito, pero tienen diferente look y el distrito es clicable para que te muestre todos los spots de ese distrito, tendría que ser lo mismo para la categoria
+- En la pantalla de add-spot, en el formulario, el input de categoria tiene las categorias correspondientes en una especie de scroll horizontal, no es algo que haya pedido pero funciona bien. Entonces se tendría que hacer lo mismo en el input de distrito, ya que actualmente se abre un desplegable con todos los distritos y este desplegable genera conflicto visual con el resto de elementos del formulario.
+- Al ser una aplicación destinada al publico local de Barcelona, pasar a catalán todo lo que se pueda pasar (spot por 'lloc', cargando favoritos por 'carregant favorits').
+- Añadir un icono de lupa justo antes de la palabra 'CERCAR' en el botón de 'CERCAR' de la pantalla principal
+
+### Próximos Pasos Opcionales
+
+Aunque el proyecto está completo según el plan, podrías considerar:
+
+1. Testing: Escribir tests para componentes clave
+2. Accesibilidad: Añadir labels y soporte para screen readers
+3. Optimización de imágenes: Lazy loading, placeholders
+4. Analytics: Tracking de uso con Posthog o similar
+5. Push Notifications: Para nuevos spots o favoritos cercanos
+6. Modo offline: Cache local con AsyncStorage
+7. Build de producción: EAS Build + Deploy en Play Store/App Store
+
+
+
 ---
 
 ## 📚 Referencias Clave

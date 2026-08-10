@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { favoritesService } from '../services/supabase/favorites';
 import { spotsService } from '../services/supabase/spots';
 import { Spot } from '../services/supabase/types';
 import SpotCard from '../components/SpotCard';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 import { Colors, Typography, Spacing } from '../constants/Theme';
 
 export default function FavoritesScreen() {
@@ -13,6 +15,7 @@ export default function FavoritesScreen() {
   const { user, loading: authLoading } = useAuth();
   const [favoriteSpots, setFavoriteSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -27,6 +30,7 @@ export default function FavoritesScreen() {
   async function loadFavorites() {
     try {
       setLoading(true);
+      setError(null);
       const favorites = await favoritesService.getByUserId(user!.id);
       const spotIds = favorites.map(f => f.spot_id);
 
@@ -36,31 +40,32 @@ export default function FavoritesScreen() {
       );
 
       setFavoriteSpots(spots.filter(Boolean) as Spot[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading favorites:', error);
+      setError(error.message || 'No s\'han pogut carregar els favorits');
     } finally {
       setLoading(false);
     }
   }
 
   if (authLoading || loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <LoadingSpinner message="Carregant favorits..." />;
   }
 
   if (!user) {
     return null;
   }
 
+  if (error) {
+    return <ErrorMessage message={error} onRetry={loadFavorites} />;
+  }
+
   if (favoriteSpots.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No tienes favoritos aún</Text>
+        <Text style={styles.emptyText}>No tens favorits encara</Text>
         <Text style={styles.emptySubtext}>
-          Explora spots y añádelos a favoritos desde el detalle
+          Explora llocs i afegeix-los a favorits des del detall
         </Text>
       </View>
     );
@@ -81,12 +86,6 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: Colors.background,
   },
   emptyContainer: {

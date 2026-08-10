@@ -1,10 +1,11 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
 
 interface SearchButtonProps {
@@ -40,7 +41,10 @@ export default function SearchButton({ onPress, disabled }: SearchButtonProps) {
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <Text style={styles.buttonText}>CERCAR</Text>
+      <View style={styles.content}>
+        <Ionicons name="search" size={20} color={Colors.onPrimary} />
+        <Text style={styles.buttonText}>CERCAR</Text>
+      </View>
     </AnimatedTouchable>
   );
 }
@@ -66,6 +70,11 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     backgroundColor: Colors.surfaceHigh,
     opacity: 0.5,
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   buttonText: {
     ...Typography.industrialLabel,

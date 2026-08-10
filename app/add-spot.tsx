@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView, Alert, ActivityIndicator, Image, Modal } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView, Alert, Image, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { spotsService } from '../services/supabase/spots';
 import { storageService } from '../services/supabase/storage';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
 import { CATEGORIES } from '../constants/Categories';
 import { DISTRICTS } from '../constants/Districts';
@@ -50,7 +51,7 @@ export default function AddSpotScreen() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para seleccionar una imagen');
+        Alert.alert('Permís denegat', 'Necessitem accés a la teva galeria per seleccionar una imatge');
         return;
       }
 
@@ -65,7 +66,7 @@ export default function AddSpotScreen() {
         setImageUri(result.assets[0].uri);
       }
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo seleccionar la imagen');
+      Alert.alert('Error', 'No s\'ha pogut seleccionar la imatge');
     }
   }
 
@@ -75,7 +76,7 @@ export default function AddSpotScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'No se puede obtener la ubicación sin permisos. Los campos de latitud y longitud quedarán vacíos.');
+        Alert.alert('Permís denegat', 'No es pot obtenir la ubicació sense permisos. Els camps de latitud i longitud quedaran buits.');
         return;
       }
 
@@ -85,9 +86,9 @@ export default function AddSpotScreen() {
 
       setLatitudeText(location.coords.latitude.toFixed(6));
       setLongitudeText(location.coords.longitude.toFixed(6));
-      Alert.alert('Ubicación obtenida', 'Coordenadas guardadas en los campos correspondientes');
+      Alert.alert('Ubicació obtinguda', 'Coordenades desades als camps corresponents');
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo obtener la ubicación. Puedes ingresarla manualmente o seleccionarla en el mapa.');
+      Alert.alert('Error', 'No s\'ha pogut obtenir la ubicació. Pots introduir-la manualment o seleccionar-la al mapa.');
     } finally {
       setLoading(false);
     }
@@ -152,7 +153,7 @@ export default function AddSpotScreen() {
       setLatitudeText(selectedLocation.latitude.toFixed(6));
       setLongitudeText(selectedLocation.longitude.toFixed(6));
       setShowMapModal(false);
-      Alert.alert('Ubicación seleccionada', 'Las coordenadas se han guardado en los campos correspondientes');
+      Alert.alert('Ubicació seleccionada', 'Les coordenades s\'han desat als camps corresponents');
     }
   }
 
@@ -165,12 +166,12 @@ export default function AddSpotScreen() {
     if (!trimmedTag) return;
 
     if (tags.length >= 3) {
-      Alert.alert('Límite alcanzado', 'Puedes añadir máximo 3 tags');
+      Alert.alert('Límit assolit', 'Pots afegir màxim 3 etiquetes');
       return;
     }
 
     if (tags.includes(trimmedTag)) {
-      Alert.alert('Tag duplicado', 'Este tag ya existe');
+      Alert.alert('Etiqueta duplicada', 'Aquesta etiqueta ja existeix');
       return;
     }
 
@@ -183,17 +184,17 @@ export default function AddSpotScreen() {
   }
 
   async function handleSubmit() {
-    // Validaciones obligatorias: solo categoría, distrito e imagen
+    // Validacions obligatòries: només categoria, districte i imatge
     if (!category) {
-      Alert.alert('Error', 'Debes seleccionar una categoría');
+      Alert.alert('Error', 'Has de seleccionar una categoria');
       return;
     }
     if (!district) {
-      Alert.alert('Error', 'Debes seleccionar un distrito');
+      Alert.alert('Error', 'Has de seleccionar un districte');
       return;
     }
     if (!imageUri) {
-      Alert.alert('Error', 'Debes seleccionar una imagen');
+      Alert.alert('Error', 'Has de seleccionar una imatge');
       return;
     }
 
@@ -206,7 +207,7 @@ export default function AddSpotScreen() {
       const lng = parseFloat(longitudeText);
 
       if (isNaN(lat) || isNaN(lng)) {
-        Alert.alert('Error', 'Las coordenadas no son válidas. Deben ser números.');
+        Alert.alert('Error', 'Les coordenades no són vàlides. Han de ser números.');
         return;
       }
 
@@ -235,14 +236,14 @@ export default function AddSpotScreen() {
         created_by: user!.id,
       });
 
-      Alert.alert('Éxito', 'Spot creado correctamente', [
+      Alert.alert('Èxit', 'Lloc creat correctament', [
         {
-          text: 'Ver spot',
+          text: 'Veure lloc',
           onPress: () => router.replace(`/spot/${newSpot.id}`),
         },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'No se pudo crear el spot');
+      Alert.alert('Error', error.message || 'No s\'ha pogut crear el lloc');
     } finally {
       setLoading(false);
       setUploading(false);
@@ -250,11 +251,7 @@ export default function AddSpotScreen() {
   }
 
   if (authLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <LoadingSpinner message="Verificant autenticació..." />;
   }
 
   if (!user) {
@@ -264,22 +261,22 @@ export default function AddSpotScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>AÑADIR SPOT</Text>
+        <Text style={styles.title}>AFEGIR LLOC</Text>
 
-        <Text style={styles.label}>Nombre (opcional)</Text>
+        <Text style={styles.label}>Nom (opcional)</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nombre del spot"
+          placeholder="Nom del lloc"
           placeholderTextColor={Colors.textMuted}
           value={name}
           onChangeText={setName}
           editable={!loading}
         />
 
-        <Text style={styles.label}>Descripción (opcional)</Text>
+        <Text style={styles.label}>Descripció (opcional)</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Describe el spot..."
+          placeholder="Descriu el lloc..."
           placeholderTextColor={Colors.textMuted}
           value={description}
           onChangeText={setDescription}
@@ -288,7 +285,7 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Sitio web (opcional)</Text>
+        <Text style={styles.label}>Lloc web (opcional)</Text>
         <TextInput
           style={styles.input}
           placeholder="https://..."
@@ -300,7 +297,7 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Categoría *</Text>
+        <Text style={styles.label}>Categoria *</Text>
         <TouchableOpacity
           style={styles.pickerButton}
           onPress={() => setShowCategoryPicker(!showCategoryPicker)}
@@ -308,7 +305,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={category ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
-            {category || 'Selecciona una categoría'}
+            {category || 'Selecciona una categoria'}
           </Text>
         </TouchableOpacity>
 
@@ -340,7 +337,7 @@ export default function AddSpotScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Distrito *</Text>
+        <Text style={styles.label}>Districte *</Text>
         <TouchableOpacity
           style={styles.pickerButton}
           onPress={() => setShowDistrictPicker(!showDistrictPicker)}
@@ -348,37 +345,39 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={district ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
-            {district || 'Selecciona un distrito'}
+            {district || 'Selecciona un districte'}
           </Text>
         </TouchableOpacity>
 
         {showDistrictPicker && (
           <View style={styles.pickerContainer}>
-            {DISTRICTS.map((dist) => (
-              <TouchableOpacity
-                key={dist}
-                style={[
-                  styles.pickerItem,
-                  district === dist && styles.pickerItemSelected
-                ]}
-                onPress={() => {
-                  setDistrict(dist);
-                  setShowDistrictPicker(false);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[
-                  styles.pickerItemText,
-                  district === dist && styles.pickerItemTextSelected
-                ]}>
-                  {dist}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll}>
+              {DISTRICTS.map((dist) => (
+                <TouchableOpacity
+                  key={dist}
+                  style={[
+                    styles.pickerItem,
+                    district === dist && styles.pickerItemSelected
+                  ]}
+                  onPress={() => {
+                    setDistrict(dist);
+                    setShowDistrictPicker(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[
+                    styles.pickerItemText,
+                    district === dist && styles.pickerItemTextSelected
+                  ]}>
+                    {dist}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         )}
 
-        <Text style={styles.label}>Imagen *</Text>
+        <Text style={styles.label}>Imatge *</Text>
         <TouchableOpacity
           style={styles.imageButton}
           onPress={handlePickImage}
@@ -386,7 +385,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.imageButtonText}>
-            {imageUri ? '✓ Imagen seleccionada' : 'Seleccionar imagen'}
+            {imageUri ? '✓ Imatge seleccionada' : 'Seleccionar imatge'}
           </Text>
         </TouchableOpacity>
 
@@ -403,7 +402,7 @@ export default function AddSpotScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Ubicación (opcional)</Text>
+        <Text style={styles.label}>Ubicació (opcional)</Text>
         
         <View style={styles.locationButtonsContainer}>
           <TouchableOpacity
@@ -412,7 +411,7 @@ export default function AddSpotScreen() {
             disabled={loading}
             activeOpacity={0.7}
           >
-            <Text style={styles.locationButtonText}>Ubicación actual</Text>
+            <Text style={styles.locationButtonText}>Ubicació actual</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -447,21 +446,21 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Dirección (opcional)</Text>
+        <Text style={styles.label}>Adreça (opcional)</Text>
         <TextInput
           style={styles.input}
-          placeholder="Calle y número"
+          placeholder="Carrer i número"
           placeholderTextColor={Colors.textMuted}
           value={address}
           onChangeText={setAddress}
           editable={!loading}
         />
 
-        <Text style={styles.label}>Tags (opcional, máx. 3)</Text>
+        <Text style={styles.label}>Etiquetes (opcional, màx. 3)</Text>
         <View style={styles.tagInputContainer}>
           <TextInput
             style={styles.tagInput}
-            placeholder="Añadir tag..."
+            placeholder="Afegir etiqueta..."
             placeholderTextColor={Colors.textMuted}
             value={tagInput}
             onChangeText={setTagInput}
@@ -502,7 +501,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>
-            {uploading ? 'SUBIENDO IMAGEN...' : loading ? 'PUBLICANDO...' : 'PUBLICAR SPOT'}
+            {uploading ? 'PUJANT IMATGE...' : loading ? 'PUBLICANT...' : 'PUBLICAR LLOC'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -514,8 +513,8 @@ export default function AddSpotScreen() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>SELECCIONA UBICACIÓN</Text>
-            <Text style={styles.modalSubtitle}>Toca en el mapa para elegir las coordenadas</Text>
+            <Text style={styles.modalTitle}>SELECCIONA UBICACIÓ</Text>
+            <Text style={styles.modalSubtitle}>Toca en el mapa per triar les coordenades</Text>
           </View>
 
           <MapView
@@ -527,7 +526,7 @@ export default function AddSpotScreen() {
             {selectedLocation && (
               <Marker
                 coordinate={selectedLocation}
-                title="Ubicación seleccionada"
+                title="Ubicació seleccionada"
               />
             )}
           </MapView>
@@ -538,7 +537,7 @@ export default function AddSpotScreen() {
               onPress={handleCancelMapSelection}
               activeOpacity={0.7}
             >
-              <Text style={styles.modalButtonTextCancel}>Cancelar</Text>
+              <Text style={styles.modalButtonTextCancel}>Cancel·lar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -558,12 +557,6 @@ export default function AddSpotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: Colors.background,
   },
   content: {

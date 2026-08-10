@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
 import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import AnimatedButton from "./AnimatedButton";
 
 interface SpotCardProps {
   spot: Spot;
@@ -16,7 +17,7 @@ export default function SpotCard({ spot }: SpotCardProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
+    <AnimatedButton style={styles.card} onPress={handlePress}>
       <Image
         source={{ uri: spot.image_url }}
         style={styles.image}
@@ -35,7 +36,7 @@ export default function SpotCard({ spot }: SpotCardProps) {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </AnimatedButton>
   );
 }
 
@@ -46,6 +47,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     overflow: "hidden",
+    borderWidth: 0.5,
+    borderColor: Colors.primary,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

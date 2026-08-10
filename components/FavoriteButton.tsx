@@ -37,7 +37,7 @@ export default function FavoriteButton({ isFavorite, onToggle }: FavoriteButtonP
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <Ionicons
-          name={isFavorite ? 'heart' : 'heart-outline'}
+          name={isFavorite ? 'bookmark' : 'bookmark-outline'}
           size={28}
           color={isFavorite ? Colors.primary : Colors.textMuted}
         />

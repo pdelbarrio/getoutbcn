@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
 import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import AnimatedButton from "./AnimatedButton";
 
 interface NearbySpotCardProps {
   spot: Spot;
@@ -17,15 +18,15 @@ export default function NearbySpotCard({ spot, distance }: NearbySpotCardProps) 
   };
 
   const formatDistance = (dist?: number) => {
-    if (!dist) return "Ubicación no disponible";
+    if (!dist) return "Ubicació no disponible";
     if (dist < 1) return `${(dist * 1000).toFixed(0)}m`;
     return `${dist.toFixed(1)}km`;
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>NEARBY SPOT</Text>
-      <TouchableOpacity style={styles.card} onPress={handlePress}>
+      <Text style={styles.label}>LLOC PROPER</Text>
+      <AnimatedButton style={styles.card} onPress={handlePress}>
         <Image
           source={{ uri: spot.image_url }}
           style={styles.image}
@@ -51,7 +52,7 @@ export default function NearbySpotCard({ spot, distance }: NearbySpotCardProps) 
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </AnimatedButton>
     </View>
   );
 }
@@ -70,6 +71,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceLow,
     borderRadius: BorderRadius.card,
     overflow: "hidden",
+    borderWidth: 0.5,
+    borderColor: Colors.primary,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

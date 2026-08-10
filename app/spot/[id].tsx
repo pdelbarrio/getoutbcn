@@ -3,20 +3,19 @@ import {
   ScrollView,
   View,
   StyleSheet,
-  ActivityIndicator,
-  Text,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
 import { spotsService } from "../../services/supabase/spots";
 import { favoritesService } from "../../services/supabase/favorites";
 import { useAuth } from "../../contexts/AuthContext";
 import { Spot } from "../../services/supabase/types";
-import ImageHeader from "../../components/ImageHeader";
+import SpotDetailHeader from "../../components/SpotDetailHeader";
 import SpotInfo from "../../components/SpotInfo";
 import CategoryTag from "../../components/CategoryTag";
 import DistrictButton from "../../components/DistrictButton";
 import MapViewWrapper from "../../components/MapViewWrapper";
-import FavoriteButton from "../../components/FavoriteButton";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import ErrorMessage from "../../components/ErrorMessage";
 import { Colors, Spacing } from "../../constants/Theme";
 
 export default function SpotDetailScreen() {
@@ -25,6 +24,7 @@ export default function SpotDetailScreen() {
   const [spot, setSpot] = useState<Spot | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSpot();
@@ -33,10 +33,12 @@ export default function SpotDetailScreen() {
 
   async function loadSpot() {
     try {
+      setError(null);
       const data = await spotsService.getById(id as string);
       setSpot(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading spot:", error);
+      setError(error.message || 'No s\'ha pogut carregar el lloc');
     } finally {
       setLoading(false);
     }
@@ -67,24 +69,24 @@ export default function SpotDetailScreen() {
   }
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <LoadingSpinner message="Carregant lloc..." />;
   }
 
-  if (!spot) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Spot no encontrado</Text>
-      </View>
-    );
+  if (error || !spot) {
+    return <ErrorMessage message={error || "Lloc no trobat"} onRetry={loadSpot} />;
   }
 
   return (
     <ScrollView style={styles.container}>
-      <ImageHeader imageUrl={spot.image_url} />
+      <Stack.Screen options={{ headerShown: false }} />
+      <SpotDetailHeader
+        imageUrl={spot.image_url}
+        spotName={spot.name}
+        spotId={spot.id}
+        isFavorite={isFavorite}
+        onToggleFavorite={toggleFavorite}
+        showFavorite={!!user}
+      />
 
       <SpotInfo
         name={spot.name}
@@ -102,12 +104,6 @@ export default function SpotDetailScreen() {
         longitude={spot.longitude}
         name={spot.name}
       />
-
-      {user && (
-        <View style={styles.favoriteContainer}>
-          <FavoriteButton isFavorite={isFavorite} onToggle={toggleFavorite} />
-        </View>
-      )}
     </ScrollView>
   );
 }
@@ -117,31 +113,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 16,
-  },
   tagsContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: Spacing.horizontalPadding,
     marginTop: 12,
     gap: 12,
-  },
-  favoriteContainer: {
-    alignItems: "center",
-    paddingVertical: 24,
   },
 });
