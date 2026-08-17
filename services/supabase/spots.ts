@@ -36,6 +36,15 @@ export const spotsService = {
     return data || [];
   },
 
+  async getByTag(tag: string): Promise<Spot[]> {
+    const { data, error } = await supabase
+      .from("spots")
+      .select("*")
+      .contains("tags", [tag]);
+    if (error) throw error;
+    return data || [];
+  },
+
   async getByCategoryAndDistrict(
     category: string,
     district: string,

@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { spotsService } from "../services/supabase/spots";
@@ -21,8 +28,13 @@ export default function HomeScreen() {
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [randomSpot, setRandomSpot] = useState<Spot | null>(null);
   const [nearbySpot, setNearbySpot] = useState<Spot | null>(null);
-  const [nearbyDistance, setNearbyDistance] = useState<number | undefined>(undefined);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [nearbyDistance, setNearbyDistance] = useState<number | undefined>(
+    undefined,
+  );
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   useEffect(() => {
     loadRandomSpot();
@@ -41,9 +53,9 @@ export default function HomeScreen() {
   async function getUserLocation() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status !== 'granted') {
-        console.log('Location permission not granted');
+
+      if (status !== "granted") {
+        console.log("Location permission not granted");
         return;
       }
 
@@ -67,7 +79,7 @@ export default function HomeScreen() {
     try {
       const allSpots = await spotsService.getAll();
       const nearest = findNearestSpot(userLat, userLon, allSpots);
-      
+
       if (nearest) {
         setNearbySpot(nearest.spot);
         setNearbyDistance(nearest.distance);
@@ -92,8 +104,12 @@ export default function HomeScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.title}>GetOutBCN</Text>
-          
+          <Image
+            source={require("../assets/images/logo2.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+
           <View style={styles.authButtons}>
             {!user ? (
               <TouchableOpacity
@@ -115,14 +131,22 @@ export default function HomeScreen() {
                   onPress={() => router.push("/favorites")}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="bookmark-outline" size={20} color={Colors.primary} />
+                  <Ionicons
+                    name="bookmark-outline"
+                    size={20}
+                    color={Colors.primary}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.iconButton}
                   onPress={() => router.push("/profile")}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="person-circle-outline" size={24} color={Colors.primary} />
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={24}
+                    color={Colors.primary}
+                  />
                 </TouchableOpacity>
               </View>
             )}
@@ -144,7 +168,9 @@ export default function HomeScreen() {
           disabled={!selectedCategory && !selectedDistrict}
         />
 
-        {nearbySpot && <NearbySpotCard spot={nearbySpot} distance={nearbyDistance} />}
+        {nearbySpot && (
+          <NearbySpotCard spot={nearbySpot} distance={nearbyDistance} />
+        )}
 
         {randomSpot && <RandomSpotCard spot={randomSpot} />}
       </ScrollView>
@@ -213,5 +239,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  logo: {
+    width: 200,
+    height: 70,
+    resizeMode: "contain",
   },
 });

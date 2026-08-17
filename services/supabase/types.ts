@@ -9,6 +9,7 @@ export type Spot = {
   latitude: number;
   longitude: number;
   tags?: string[];
+  address?: string;
   created_by: string;
   created_at: string;
 };

@@ -1691,6 +1691,14 @@ supabase functions deploy generate-upload-url --project-ref tu-project-ref
 - Al ser una aplicación destinada al publico local de Barcelona, pasar a catalán todo lo que se pueda pasar (spot por 'lloc', cargando favoritos por 'carregant favorits').
 - Añadir un icono de lupa justo antes de la palabra 'CERCAR' en el botón de 'CERCAR' de la pantalla principal
 
+
+
+Pensar mejoras: Botón de 'Como llegar' que lea la ubicación actual y te diga como se llega al sitio
+Mejora con IA?
+
+
+
+
 ### Próximos Pasos Opcionales
 
 Aunque el proyecto está completo según el plan, podrías considerar:

@@ -57,8 +57,6 @@ export default function AddSpotScreen() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [16, 9],
         quality: 0.8,
       });
 
@@ -233,6 +231,7 @@ export default function AddSpotScreen() {
         longitude: longitude ?? 0,
         image_url: imageUrl,
         tags: tags.length > 0 ? tags : undefined,
+        address: address.trim() || undefined,
         created_by: user!.id,
       });
 

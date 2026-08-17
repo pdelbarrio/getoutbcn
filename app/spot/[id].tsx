@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-} from "react-native";
+import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { spotsService } from "../../services/supabase/spots";
 import { favoritesService } from "../../services/supabase/favorites";
@@ -13,10 +9,11 @@ import SpotDetailHeader from "../../components/SpotDetailHeader";
 import SpotInfo from "../../components/SpotInfo";
 import CategoryTag from "../../components/CategoryTag";
 import DistrictButton from "../../components/DistrictButton";
+import TagButton from "../../components/TagButton";
 import MapViewWrapper from "../../components/MapViewWrapper";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
-import { Colors, Spacing } from "../../constants/Theme";
+import { Colors, Typography, Spacing } from "../../constants/Theme";
 
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -38,7 +35,7 @@ export default function SpotDetailScreen() {
       setSpot(data);
     } catch (error: any) {
       console.error("Error loading spot:", error);
-      setError(error.message || 'No s\'ha pogut carregar el lloc');
+      setError(error.message || "No s'ha pogut carregar el lloc");
     } finally {
       setLoading(false);
     }
@@ -73,7 +70,9 @@ export default function SpotDetailScreen() {
   }
 
   if (error || !spot) {
-    return <ErrorMessage message={error || "Lloc no trobat"} onRetry={loadSpot} />;
+    return (
+      <ErrorMessage message={error || "Lloc no trobat"} onRetry={loadSpot} />
+    );
   }
 
   return (
@@ -94,10 +93,30 @@ export default function SpotDetailScreen() {
         website={spot.website}
       />
 
+      {spot.tags && spot.tags.length > 0 && (
+        <View style={styles.userTagsContainer}>
+          {spot.tags.map((tag) => (
+            <View key={tag} style={styles.userTagWrapper}>
+              <TagButton tag={tag} />
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={styles.tagsContainer}>
-        <CategoryTag category={spot.category} />
-        <DistrictButton district={spot.district} />
+        <View style={styles.tagWrapper}>
+          <CategoryTag category={spot.category} />
+        </View>
+        <View style={styles.tagWrapper}>
+          <DistrictButton district={spot.district} />
+        </View>
       </View>
+
+      {spot.address && (
+        <View style={styles.addressContainer}>
+          <Text style={styles.addressText}>{spot.address}</Text>
+        </View>
+      )}
 
       <MapViewWrapper
         latitude={spot.latitude}
@@ -113,11 +132,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  userTagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: Spacing.horizontalPadding,
+    marginTop: 12,
+    gap: 8,
+  },
+  userTagWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   tagsContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: Spacing.horizontalPadding,
     marginTop: 12,
     gap: 12,
+  },
+  tagWrapper: {
+    height: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addressContainer: {
+    paddingHorizontal: Spacing.horizontalPadding,
+    marginTop: 12,
+  },
+  addressText: {
+    ...Typography.industrialLabel,
+    color: Colors.textSecondary,
   },
 });

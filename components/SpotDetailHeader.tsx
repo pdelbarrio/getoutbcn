@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Share, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Share, Alert, Modal, Pressable, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '../constants/Theme';
@@ -22,12 +22,12 @@ export default function SpotDetailHeader({
   showFavorite,
 }: SpotDetailHeaderProps) {
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleShare = async () => {
     try {
       await Share.share({
         message: `Mira aquest lloc a GetOutBCN: ${spotName}`,
-        // URL would be here if we had deep linking
       });
     } catch (error) {
       console.error('Error sharing:', error);
@@ -43,53 +43,81 @@ export default function SpotDetailHeader({
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: imageUrl }}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      
-      <View style={styles.overlay}>
-        <View style={styles.topBar}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-
-          <Text style={styles.title}>Detall del lloc</Text>
-
-          <View style={styles.rightButtons}>
+    <>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={() => setModalVisible(true)}
+        activeOpacity={0.9}
+      >
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        
+        <View style={styles.overlay}>
+          <View style={styles.topBar}>
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={handleShare}
+              onPress={() => router.back()}
               activeOpacity={0.7}
             >
-              <Ionicons name="share-outline" size={24} color={Colors.textPrimary} />
+              <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
 
-            {showFavorite && (
+            <Text style={styles.title}>Detall del lloc</Text>
+
+            <View style={styles.rightButtons}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={handleFavorite}
+                onPress={handleShare}
                 activeOpacity={0.7}
               >
-                <Ionicons
-                  name={isFavorite ? 'bookmark' : 'bookmark-outline'}
-                  size={24}
-                  color={isFavorite ? Colors.primary : Colors.textPrimary}
-                />
+                <Ionicons name="share-outline" size={24} color={Colors.textPrimary} />
               </TouchableOpacity>
-            )}
+
+              {showFavorite && (
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleFavorite}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={isFavorite ? 'bookmark' : 'bookmark-outline'}
+                    size={24}
+                    color={isFavorite ? Colors.primary : Colors.textPrimary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
-      </View>
-    </View>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setModalVisible(false)}
+        >
+          <Pressable style={styles.modalContent} onPress={() => {}}>
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.modalImage}
+              resizeMode="contain"
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -132,5 +160,19 @@ const styles = StyleSheet.create({
   rightButtons: {
     flexDirection: 'row',
     gap: 8,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.7,
+  },
+  modalImage: {
+    width: '100%',
+    height: '100%',
   },
 });
