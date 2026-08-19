@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
 import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import { t } from "../constants/Translations";
 import AnimatedButton from "./AnimatedButton";
 
 interface NearbySpotCardProps {
@@ -18,14 +19,14 @@ export default function NearbySpotCard({ spot, distance }: NearbySpotCardProps) 
   };
 
   const formatDistance = (dist?: number) => {
-    if (!dist) return "Ubicació no disponible";
+    if (!dist) return t.locationNotAvailable;
     if (dist < 1) return `${(dist * 1000).toFixed(0)}m`;
     return `${dist.toFixed(1)}km`;
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>LLOC PROPER</Text>
+      <Text style={styles.label}>{t.nearbySpot}</Text>
       <AnimatedButton style={styles.card} onPress={handlePress}>
         <Image
           source={{ uri: spot.image_url }}

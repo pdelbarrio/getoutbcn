@@ -1,6 +1,7 @@
 import * as WebBrowser from "expo-web-browser";
 import * as AuthSession from "expo-auth-session";
 import { supabase } from "./client";
+import { t } from "../../constants/Translations";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -26,7 +27,7 @@ export const socialAuthService = {
     }
     console.log("✅ URL de OAuth obtenida:", data.url);
     if (!data.url)
-      throw new Error("No se pudo obtener la URL de autenticación");
+      throw new Error(t.errorAuthUrl);
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
     console.log(" Resultado de WebBrowser:", result.type);
@@ -38,7 +39,7 @@ export const socialAuthService = {
       console.log("✅ Autenticación con Google exitosa");
     } else {
       console.error("🔴 Autenticación con Google cancelada o fallida:", result);
-      throw new Error("Autenticación cancelada o fallida");
+      throw new Error(t.errorAuthCancelled);
     }
   },
 };

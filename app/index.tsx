@@ -18,6 +18,7 @@ import SearchButton from "../components/SearchButton";
 import RandomSpotCard from "../components/RandomSpotCard";
 import NearbySpotCard from "../components/NearbySpotCard";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
+import { t } from "../constants/Translations";
 import * as Location from "expo-location";
 import { findNearestSpot } from "../utils/geolocation";
 
@@ -116,7 +117,7 @@ export default function HomeScreen() {
                 style={styles.loginButton}
                 onPress={() => router.push("/login")}
               >
-                <Text style={styles.loginButtonText}>Iniciar sessió</Text>
+                <Text style={styles.loginButtonText}>{t.login}</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.userButtons}>
@@ -124,7 +125,7 @@ export default function HomeScreen() {
                   style={styles.addSpotButton}
                   onPress={() => router.push("/add-spot")}
                 >
-                  <Text style={styles.addSpotButtonText}>+ Lloc</Text>
+                  <Text style={styles.addSpotButtonText}>{t.addSpot}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.iconButton}

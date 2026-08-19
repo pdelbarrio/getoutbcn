@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { authService } from '../services/supabase/auth';
 import { profilesService } from '../services/supabase/profiles';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
+import { t } from '../constants/Translations';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -18,15 +19,15 @@ export default function SignUpScreen() {
 
     // Validations
     if (!email.includes('@')) {
-      setError('Email inválido');
+      setError(t.invalidEmail);
       return;
     }
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError(t.passwordTooShort);
       return;
     }
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError(t.passwordsDoNotMatch);
       return;
     }
 
@@ -37,7 +38,7 @@ export default function SignUpScreen() {
       const { user } = await authService.signUp(email, password);
 
       if (!user) {
-        throw new Error('No se pudo crear el usuario');
+        throw new Error(t.errorCreatingUser);
       }
 
       // Create profile
@@ -48,7 +49,7 @@ export default function SignUpScreen() {
 
       router.replace('/');
     } catch (err: any) {
-      setError(err.message || 'Error al crear la cuenta');
+      setError(err.message || t.errorCreatingAccount);
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export default function SignUpScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-          <Text style={styles.title}>CREAR CUENTA</Text>
+          <Text style={styles.title}>{t.signUp}</Text>
           
           <TextInput
             style={styles.input}
@@ -79,7 +80,7 @@ export default function SignUpScreen() {
           
           <TextInput
             style={styles.input}
-            placeholder="Contraseña"
+            placeholder={t.password}
             placeholderTextColor={Colors.textMuted}
             value={password}
             onChangeText={setPassword}
@@ -89,7 +90,7 @@ export default function SignUpScreen() {
           
           <TextInput
             style={styles.input}
-            placeholder="Confirmar contraseña"
+            placeholder={t.confirmPassword}
             placeholderTextColor={Colors.textMuted}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -106,7 +107,7 @@ export default function SignUpScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'CREANDO CUENTA...' : 'CREAR CUENTA'}
+              {loading ? 'CREANT COMPTE...' : t.signUp}
             </Text>
           </TouchableOpacity>
           
@@ -116,7 +117,7 @@ export default function SignUpScreen() {
             disabled={loading}
           >
             <Text style={styles.linkText}>
-              ¿Ya tienes cuenta? <Text style={styles.linkTextHighlight}>Iniciar sesión</Text>
+              {t.alreadyHaveAccount} <Text style={styles.linkTextHighlight}>{t.signIn}</Text>
             </Text>
           </TouchableOpacity>
         </View>

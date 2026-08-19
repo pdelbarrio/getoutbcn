@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
+import { t } from "../constants/Translations";
 
 interface SearchButtonProps {
   onPress: () => void;
@@ -43,7 +44,7 @@ export default function SearchButton({ onPress, disabled }: SearchButtonProps) {
     >
       <View style={styles.content}>
         <Ionicons name="search" size={20} color={Colors.onPrimary} />
-        <Text style={styles.buttonText}>CERCAR</Text>
+        <Text style={styles.buttonText}>{t.search}</Text>
       </View>
     </AnimatedTouchable>
   );

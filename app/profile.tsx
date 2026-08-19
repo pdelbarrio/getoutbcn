@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/supabase/auth';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
+import { t } from '../constants/Translations';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -20,14 +21,14 @@ export default function ProfileScreen() {
       await authService.signOut();
       router.replace('/');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error(t.errorClosingSession, error);
     }
   }
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Cargando...</Text>
+        <Text style={styles.loadingText}>{t.loading}...</Text>
       </View>
     );
   }
@@ -39,15 +40,15 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>PERFIL</Text>
+        <Text style={styles.title}>{t.profileTitle}</Text>
         
         <View style={styles.infoCard}>
-          <Text style={styles.label}>EMAIL</Text>
+          <Text style={styles.label}>{t.emailLabel}</Text>
           <Text style={styles.value}>{user.email}</Text>
         </View>
 
         <View style={styles.infoCard}>
-          <Text style={styles.label}>ID DE USUARIO</Text>
+          <Text style={styles.label}>{t.userIdLabel}</Text>
           <Text style={[styles.value, styles.idText]} numberOfLines={1}>
             {user.id}
           </Text>
@@ -58,7 +59,7 @@ export default function ProfileScreen() {
           onPress={handleLogout}
           activeOpacity={0.7}
         >
-          <Text style={styles.logoutButtonText}>CERRAR SESIÓN</Text>
+          <Text style={styles.logoutButtonText}>{t.logout}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

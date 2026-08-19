@@ -6,8 +6,9 @@ import { spotsService } from '../services/supabase/spots';
 import { storageService } from '../services/supabase/storage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
-import { CATEGORIES } from '../constants/Categories';
+import { CATEGORIES, CATEGORY_LABELS } from '../constants/Categories';
 import { DISTRICTS } from '../constants/Districts';
+import { t } from '../constants/Translations';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -51,7 +52,7 @@ export default function AddSpotScreen() {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permís denegat', 'Necessitem accés a la teva galeria per seleccionar una imatge');
+        Alert.alert(t.permissionDenied, t.galleryPermissionDenied);
         return;
       }
 
@@ -64,7 +65,7 @@ export default function AddSpotScreen() {
         setImageUri(result.assets[0].uri);
       }
     } catch (error: any) {
-      Alert.alert('Error', 'No s\'ha pogut seleccionar la imatge');
+      Alert.alert(t.error, t.errorSelectImage);
     }
   }
 
@@ -74,7 +75,7 @@ export default function AddSpotScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert('Permís denegat', 'No es pot obtenir la ubicació sense permisos. Els camps de latitud i longitud quedaran buits.');
+        Alert.alert(t.permissionDenied, t.locationPermissionDenied);
         return;
       }
 
@@ -84,9 +85,9 @@ export default function AddSpotScreen() {
 
       setLatitudeText(location.coords.latitude.toFixed(6));
       setLongitudeText(location.coords.longitude.toFixed(6));
-      Alert.alert('Ubicació obtinguda', 'Coordenades desades als camps corresponents');
+      Alert.alert(t.locationObtained, t.locationSaved);
     } catch (error: any) {
-      Alert.alert('Error', 'No s\'ha pogut obtenir la ubicació. Pots introduir-la manualment o seleccionar-la al mapa.');
+      Alert.alert(t.error, t.errorGetLocation);
     } finally {
       setLoading(false);
     }
@@ -151,7 +152,7 @@ export default function AddSpotScreen() {
       setLatitudeText(selectedLocation.latitude.toFixed(6));
       setLongitudeText(selectedLocation.longitude.toFixed(6));
       setShowMapModal(false);
-      Alert.alert('Ubicació seleccionada', 'Les coordenades s\'han desat als camps corresponents');
+      Alert.alert(t.locationSelected, t.locationCoordinatesSaved);
     }
   }
 
@@ -164,12 +165,12 @@ export default function AddSpotScreen() {
     if (!trimmedTag) return;
 
     if (tags.length >= 3) {
-      Alert.alert('Límit assolit', 'Pots afegir màxim 3 etiquetes');
+      Alert.alert(t.maxTagsReached, t.maxTagsMessage);
       return;
     }
 
     if (tags.includes(trimmedTag)) {
-      Alert.alert('Etiqueta duplicada', 'Aquesta etiqueta ja existeix');
+      Alert.alert(t.duplicateTag, t.duplicateTagMessage);
       return;
     }
 
@@ -182,17 +183,21 @@ export default function AddSpotScreen() {
   }
 
   async function handleSubmit() {
-    // Validacions obligatòries: només categoria, districte i imatge
+    // Validacions obligatòries
+    if (!name.trim()) {
+      Alert.alert(t.error, t.nameRequiredError);
+      return;
+    }
     if (!category) {
-      Alert.alert('Error', 'Has de seleccionar una categoria');
+      Alert.alert(t.error, t.categoryRequiredError);
       return;
     }
     if (!district) {
-      Alert.alert('Error', 'Has de seleccionar un districte');
+      Alert.alert(t.error, t.districtRequiredError);
       return;
     }
     if (!imageUri) {
-      Alert.alert('Error', 'Has de seleccionar una imatge');
+      Alert.alert(t.error, t.imageRequiredError);
       return;
     }
 
@@ -205,7 +210,7 @@ export default function AddSpotScreen() {
       const lng = parseFloat(longitudeText);
 
       if (isNaN(lat) || isNaN(lng)) {
-        Alert.alert('Error', 'Les coordenades no són vàlides. Han de ser números.');
+        Alert.alert(t.error, t.errorInvalidCoordinates);
         return;
       }
 
@@ -242,7 +247,7 @@ export default function AddSpotScreen() {
         },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'No s\'ha pogut crear el lloc');
+      Alert.alert(t.error, error.message || t.errorCreatingSpot);
     } finally {
       setLoading(false);
       setUploading(false);
@@ -250,7 +255,7 @@ export default function AddSpotScreen() {
   }
 
   if (authLoading) {
-    return <LoadingSpinner message="Verificant autenticació..." />;
+    return <LoadingSpinner message={t.verifyingAuth} />;
   }
 
   if (!user) {
@@ -260,22 +265,22 @@ export default function AddSpotScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>AFEGIR LLOC</Text>
+        <Text style={styles.title}>{t.addSpotTitle}</Text>
 
-        <Text style={styles.label}>Nom (opcional)</Text>
+        <Text style={styles.label}>{t.nameRequired}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nom del lloc"
+          placeholder={t.nameRequiredPlaceholder}
           placeholderTextColor={Colors.textMuted}
           value={name}
           onChangeText={setName}
           editable={!loading}
         />
 
-        <Text style={styles.label}>Descripció (opcional)</Text>
+        <Text style={styles.label}>{t.descriptionOptional}</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Descriu el lloc..."
+          placeholder={t.spotDescription}
           placeholderTextColor={Colors.textMuted}
           value={description}
           onChangeText={setDescription}
@@ -284,7 +289,7 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Lloc web (opcional)</Text>
+        <Text style={styles.label}>{t.website}</Text>
         <TextInput
           style={styles.input}
           placeholder="https://..."
@@ -296,7 +301,7 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Categoria *</Text>
+        <Text style={styles.label}>{t.categoryRequired}</Text>
         <TouchableOpacity
           style={styles.pickerButton}
           onPress={() => setShowCategoryPicker(!showCategoryPicker)}
@@ -304,7 +309,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={category ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
-            {category || 'Selecciona una categoria'}
+            {category ? CATEGORY_LABELS[category] || category : t.selectCategory}
           </Text>
         </TouchableOpacity>
 
@@ -328,7 +333,7 @@ export default function AddSpotScreen() {
                     styles.pickerItemText,
                     category === cat && styles.pickerItemTextSelected
                   ]}>
-                    {cat}
+                    {CATEGORY_LABELS[cat] || cat}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -336,7 +341,7 @@ export default function AddSpotScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Districte *</Text>
+        <Text style={styles.label}>{t.districtRequired}</Text>
         <TouchableOpacity
           style={styles.pickerButton}
           onPress={() => setShowDistrictPicker(!showDistrictPicker)}
@@ -344,7 +349,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={district ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
-            {district || 'Selecciona un districte'}
+            {district || t.selectDistrict}
           </Text>
         </TouchableOpacity>
 
@@ -376,7 +381,7 @@ export default function AddSpotScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Imatge *</Text>
+        <Text style={styles.label}>{t.imageRequired}</Text>
         <TouchableOpacity
           style={styles.imageButton}
           onPress={handlePickImage}
@@ -384,7 +389,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.imageButtonText}>
-            {imageUri ? '✓ Imatge seleccionada' : 'Seleccionar imatge'}
+            {imageUri ? t.imageSelected : t.selectImage}
           </Text>
         </TouchableOpacity>
 
@@ -401,7 +406,7 @@ export default function AddSpotScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Ubicació (opcional)</Text>
+        <Text style={styles.label}>{t.locationOptional}</Text>
         
         <View style={styles.locationButtonsContainer}>
           <TouchableOpacity
@@ -410,7 +415,7 @@ export default function AddSpotScreen() {
             disabled={loading}
             activeOpacity={0.7}
           >
-            <Text style={styles.locationButtonText}>Ubicació actual</Text>
+            <Text style={styles.locationButtonText}>{t.currentLocation}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -419,11 +424,11 @@ export default function AddSpotScreen() {
             disabled={loading}
             activeOpacity={0.7}
           >
-            <Text style={styles.locationButtonText}>Seleccionar en mapa</Text>
+            <Text style={styles.locationButtonText}>{t.selectOnMap}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>Latitud (opcional)</Text>
+        <Text style={styles.label}>{t.latitudeOptional}</Text>
         <TextInput
           style={styles.input}
           placeholder="41.3874"
@@ -434,7 +439,7 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Longitud (opcional)</Text>
+        <Text style={styles.label}>{t.longitudeOptional}</Text>
         <TextInput
           style={styles.input}
           placeholder="2.1686"
@@ -445,21 +450,21 @@ export default function AddSpotScreen() {
           editable={!loading}
         />
 
-        <Text style={styles.label}>Adreça (opcional)</Text>
+        <Text style={styles.label}>{t.addressOptional}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Carrer i número"
+          placeholder={t.streetAndNumber}
           placeholderTextColor={Colors.textMuted}
           value={address}
           onChangeText={setAddress}
           editable={!loading}
         />
 
-        <Text style={styles.label}>Etiquetes (opcional, màx. 3)</Text>
+        <Text style={styles.label}>{t.tagsOptional}</Text>
         <View style={styles.tagInputContainer}>
           <TextInput
             style={styles.tagInput}
-            placeholder="Afegir etiqueta..."
+            placeholder={t.addTag}
             placeholderTextColor={Colors.textMuted}
             value={tagInput}
             onChangeText={setTagInput}
@@ -500,7 +505,7 @@ export default function AddSpotScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>
-            {uploading ? 'PUJANT IMATGE...' : loading ? 'PUBLICANT...' : 'PUBLICAR LLOC'}
+            {uploading ? t.uploadingImage : loading ? t.publishing : t.publish}
           </Text>
         </TouchableOpacity>
       </View>
@@ -512,8 +517,8 @@ export default function AddSpotScreen() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>SELECCIONA UBICACIÓ</Text>
-            <Text style={styles.modalSubtitle}>Toca en el mapa per triar les coordenades</Text>
+            <Text style={styles.modalTitle}>{t.selectLocationOnMap}</Text>
+            <Text style={styles.modalSubtitle}>{t.tapMapToSelect}</Text>
           </View>
 
           <MapView
@@ -525,7 +530,7 @@ export default function AddSpotScreen() {
             {selectedLocation && (
               <Marker
                 coordinate={selectedLocation}
-                title="Ubicació seleccionada"
+                title={t.selectedLocation}
               />
             )}
           </MapView>
@@ -536,7 +541,7 @@ export default function AddSpotScreen() {
               onPress={handleCancelMapSelection}
               activeOpacity={0.7}
             >
-              <Text style={styles.modalButtonTextCancel}>Cancel·lar</Text>
+              <Text style={styles.modalButtonTextCancel}>{t.cancel}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -544,7 +549,7 @@ export default function AddSpotScreen() {
               onPress={handleConfirmLocation}
               activeOpacity={0.7}
             >
-              <Text style={styles.modalButtonTextConfirm}>Confirmar</Text>
+              <Text style={styles.modalButtonTextConfirm}>{t.confirm}</Text>
             </TouchableOpacity>
           </View>
         </View>

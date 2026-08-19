@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { authService } from '../services/supabase/auth';
 import { socialAuthService } from '../services/supabase/social-auth';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
+import { t } from '../constants/Translations';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginScreen() {
       await authService.signIn(email, password);
       router.replace('/');
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || t.errorSignIn);
     } finally {
       setLoading(false);
     }
@@ -34,7 +35,7 @@ export default function LoginScreen() {
       await socialAuthService.signInWithGoogle();
       router.replace('/');
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión con Google');
+      setError(err.message || t.errorSignInGoogle);
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>INICIAR SESIÓN</Text>
+        <Text style={styles.title}>{t.signIn}</Text>
         
         <TextInput
           style={styles.input}
@@ -61,7 +62,7 @@ export default function LoginScreen() {
         
         <TextInput
           style={styles.input}
-          placeholder="Contraseña"
+          placeholder={t.password}
           placeholderTextColor={Colors.textMuted}
           value={password}
           onChangeText={setPassword}
@@ -78,7 +79,7 @@ export default function LoginScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'INICIANDO...' : 'INICIAR SESIÓN'}
+            {loading ? t.signInLoading : t.signIn}
           </Text>
         </TouchableOpacity>
 
@@ -95,7 +96,7 @@ export default function LoginScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.googleButtonText}>
-            INICIAR SESIÓN CON GOOGLE
+            {t.signInWithGoogle}
           </Text>
         </TouchableOpacity>
         
@@ -105,7 +106,7 @@ export default function LoginScreen() {
           disabled={loading}
         >
           <Text style={styles.linkText}>
-            ¿No tienes cuenta? <Text style={styles.linkTextHighlight}>Crear cuenta</Text>
+            {t.noAccount} <Text style={styles.linkTextHighlight}>{t.createAccount}</Text>
           </Text>
         </TouchableOpacity>
       </View>

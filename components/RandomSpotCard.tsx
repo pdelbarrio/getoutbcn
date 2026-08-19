@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Spot } from "../services/supabase/types";
 import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import { t } from "../constants/Translations";
 import AnimatedButton from "./AnimatedButton";
 
 interface RandomSpotCardProps {
@@ -18,7 +19,7 @@ export default function RandomSpotCard({ spot }: RandomSpotCardProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>LLOC ALEATORI</Text>
+      <Text style={styles.label}>{t.randomSpot}</Text>
       <AnimatedButton style={styles.card} onPress={handlePress}>
         <Image
           source={{ uri: spot.image_url }}

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Share, Alert, Modal, P
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '../constants/Theme';
+import { t } from '../constants/Translations';
 
 type SpotDetailHeaderProps = {
   imageUrl: string;
@@ -27,7 +28,7 @@ export default function SpotDetailHeader({
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Mira aquest lloc a GetOutBCN: ${spotName}`,
+        message: `${t.shareSpot}: ${spotName}`,
       });
     } catch (error) {
       console.error('Error sharing:', error);
@@ -36,7 +37,7 @@ export default function SpotDetailHeader({
 
   const handleFavorite = () => {
     if (!showFavorite) {
-      Alert.alert('Inicia sessió', 'Has d\'iniciar sessió per guardar llocs');
+      Alert.alert(t.login, t.loginToSave);
       return;
     }
     onToggleFavorite();
@@ -65,7 +66,7 @@ export default function SpotDetailHeader({
               <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
 
-            <Text style={styles.title}>Detall del lloc</Text>
+            <Text style={styles.title}>{t.spotDetail}</Text>
 
             <View style={styles.rightButtons}>
               <TouchableOpacity

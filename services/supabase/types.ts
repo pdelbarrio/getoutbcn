@@ -38,7 +38,8 @@ export type Category =
   | "Cinema"
   | "Views"
   | "Silence"
-  | "Weird";
+  | "Weird"
+  | "Bars";
 
 export type District =
   | "Ciutat Vella"

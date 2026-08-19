@@ -1,4 +1,5 @@
 import { supabase } from "./client";
+import { t } from "../../constants/Translations";
 
 /**
  * Storage service for uploading images to Supabase Storage
@@ -28,7 +29,7 @@ export const storageService = {
       const accessToken = session.data.session?.access_token;
 
       if (!accessToken) {
-        throw new Error("No se pudo obtener el token de autenticación");
+        throw new Error(t.errorAuthToken);
       }
 
       const response = await fetch(functionUrl, {
@@ -43,7 +44,7 @@ export const storageService = {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Error al obtener URL firmada: ${errorData.error || response.statusText}`,
+          `${t.errorSignedUrl}: ${errorData.error || response.statusText}`,
         );
       }
 
@@ -54,7 +55,7 @@ export const storageService = {
       console.log("Descargando imagen...");
       const imageResponse = await fetch(uri);
       if (!imageResponse.ok) {
-        throw new Error(`Error al descargar imagen: ${imageResponse.status}`);
+        throw new Error(`${t.errorDownloadImage}: ${imageResponse.status}`);
       }
       const blob = await imageResponse.blob();
       console.log("Tamaño del blob (bytes):", blob.size);
@@ -73,7 +74,7 @@ export const storageService = {
         const errorText = await uploadResponse.text();
         console.error("Error en la subida:", errorText);
         throw new Error(
-          `Error al subir imagen: ${uploadResponse.status} ${uploadResponse.statusText}`,
+          `${t.errorUploadImage}: ${uploadResponse.status} ${uploadResponse.statusText}`,
         );
       }
       console.log("Imagen subida exitosamente.");
@@ -87,7 +88,7 @@ export const storageService = {
       return urlData.publicUrl;
     } catch (error: any) {
       console.error("Storage upload error:", error);
-      throw new Error(error.message || "No se pudo subir la imagen");
+      throw new Error(error.message || t.errorUploadImage);
     }
   },
 
@@ -114,7 +115,7 @@ export const storageService = {
         });
 
       if (error) {
-        throw new Error(`Error al subir avatar: ${error.message}`);
+        throw new Error(`${t.errorUploadAvatar}: ${error.message}`);
       }
 
       const { data: urlData } = supabase.storage
@@ -124,7 +125,7 @@ export const storageService = {
       return urlData.publicUrl;
     } catch (error: any) {
       console.error("Avatar upload error:", error);
-      throw new Error(error.message || "No se pudo subir el avatar");
+      throw new Error(error.message || t.errorUploadAvatar);
     }
   },
 
@@ -137,7 +138,7 @@ export const storageService = {
     const { error } = await supabase.storage.from(bucket).remove([path]);
 
     if (error) {
-      throw new Error(`Error al eliminar imagen: ${error.message}`);
+      throw new Error(`${t.errorDeleteImage}: ${error.message}`);
     }
   },
 };

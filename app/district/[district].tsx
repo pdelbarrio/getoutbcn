@@ -5,6 +5,7 @@ import { spotsService } from "../../services/supabase/spots";
 import { Spot } from "../../services/supabase/types";
 import SpotCard from "../../components/SpotCard";
 import { Colors, Typography } from "../../constants/Theme";
+import { t } from "../../constants/Translations";
 
 export default function DistrictListScreen() {
   const { district } = useLocalSearchParams();
@@ -31,7 +32,7 @@ export default function DistrictListScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{district}</Text>
-        <Text style={styles.subtitle}>{spots.length} spots</Text>
+        <Text style={styles.subtitle}>{spots.length} {t.spots}</Text>
       </View>
       <FlatList
         data={spots}

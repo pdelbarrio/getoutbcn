@@ -1,6 +1,7 @@
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
+import { CATEGORY_LABELS } from '../constants/Categories';
 
 type CategoryTagProps = {
   category: string;
@@ -15,7 +16,7 @@ export default function CategoryTag({ category }: CategoryTagProps) {
 
   return (
     <TouchableOpacity style={styles.button} onPress={handlePress} activeOpacity={0.7}>
-      <Text style={styles.text}>{category}</Text>
+      <Text style={styles.text}>{CATEGORY_LABELS[category] || category}</Text>
     </TouchableOpacity>
   );
 }

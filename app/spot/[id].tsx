@@ -14,6 +14,7 @@ import MapViewWrapper from "../../components/MapViewWrapper";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 import { Colors, Typography, Spacing } from "../../constants/Theme";
+import { t } from "../../constants/Translations";
 
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -35,7 +36,7 @@ export default function SpotDetailScreen() {
       setSpot(data);
     } catch (error: any) {
       console.error("Error loading spot:", error);
-      setError(error.message || "No s'ha pogut carregar el lloc");
+      setError(error.message || t.errorLoadingSpot);
     } finally {
       setLoading(false);
     }
@@ -66,12 +67,12 @@ export default function SpotDetailScreen() {
   }
 
   if (loading) {
-    return <LoadingSpinner message="Carregant lloc..." />;
+    return <LoadingSpinner message={t.loadingSpot} />;
   }
 
   if (error || !spot) {
     return (
-      <ErrorMessage message={error || "Lloc no trobat"} onRetry={loadSpot} />
+      <ErrorMessage message={error || t.notFound} onRetry={loadSpot} />
     );
   }
 

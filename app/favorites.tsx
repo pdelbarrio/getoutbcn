@@ -9,6 +9,7 @@ import SpotCard from '../components/SpotCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { Colors, Typography, Spacing } from '../constants/Theme';
+import { t } from '../constants/Translations';
 
 export default function FavoritesScreen() {
   const router = useRouter();
@@ -42,14 +43,14 @@ export default function FavoritesScreen() {
       setFavoriteSpots(spots.filter(Boolean) as Spot[]);
     } catch (error: any) {
       console.error('Error loading favorites:', error);
-      setError(error.message || 'No s\'han pogut carregar els favorits');
+      setError(error.message || t.errorLoadingFavorites);
     } finally {
       setLoading(false);
     }
   }
 
   if (authLoading || loading) {
-    return <LoadingSpinner message="Carregant favorits..." />;
+    return <LoadingSpinner message={t.loadingFavorites} />;
   }
 
   if (!user) {
@@ -63,9 +64,9 @@ export default function FavoritesScreen() {
   if (favoriteSpots.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No tens favorits encara</Text>
+        <Text style={styles.emptyText}>{t.noFavorites}</Text>
         <Text style={styles.emptySubtext}>
-          Explora llocs i afegeix-los a favorits des del detall
+          {t.noFavoritesSubtext}
         </Text>
       </View>
     );

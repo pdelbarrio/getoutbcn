@@ -5,6 +5,7 @@ import { spotsService } from "../../services/supabase/spots";
 import { Spot } from "../../services/supabase/types";
 import SpotCard from "../../components/SpotCard";
 import { Colors, Typography } from "../../constants/Theme";
+import { t } from "../../constants/Translations";
 
 export default function TagListScreen() {
   const { tag } = useLocalSearchParams();
@@ -31,7 +32,7 @@ export default function TagListScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{tag}</Text>
-        <Text style={styles.subtitle}>{spots.length} spots</Text>
+        <Text style={styles.subtitle}>{spots.length} {t.spots}</Text>
       </View>
       <FlatList
         data={spots}

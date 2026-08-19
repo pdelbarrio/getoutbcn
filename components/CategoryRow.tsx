@@ -9,7 +9,7 @@ import {
   NativeSyntheticEvent,
 } from "react-native";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
-import { CATEGORIES } from "../constants/Categories";
+import { CATEGORIES, CATEGORY_LABELS } from "../constants/Categories";
 
 interface CategoryRowProps {
   selectedCategory: string | null;
@@ -136,7 +136,7 @@ export default function CategoryRow({
             isSelected && styles.categoryTextSelected,
           ]}
         >
-          {item.toUpperCase()}
+          {CATEGORY_LABELS[item]?.toUpperCase() || item.toUpperCase()}
         </Text>
       </TouchableOpacity>
     );

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Colors, Typography, Spacing } from "../constants/Theme";
+import { t } from "../constants/Translations";
 import AnimatedButton from "./AnimatedButton";
 
 interface ErrorMessageProps {
@@ -15,7 +16,7 @@ interface ErrorMessageProps {
 export default function ErrorMessage({
   message,
   onRetry,
-  retryText = "Tornar a intentar",
+  retryText = t.retry,
 }: ErrorMessageProps) {
   return (
     <View style={styles.container}>
