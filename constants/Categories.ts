@@ -8,6 +8,7 @@ export const CATEGORIES = [
   "Silence",
   "Weird",
   "Bars",
+  "Art",
 ] as const;
 
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -20,4 +21,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   "Silence": "Silenci",
   "Weird": "Weird",
   "Bars": "Bars",
+  "Art": "Art",
 };

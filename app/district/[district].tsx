@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { View, FlatList, StyleSheet, Text } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
 import { spotsService } from "../../services/supabase/spots";
 import { Spot } from "../../services/supabase/types";
 import SpotCard from "../../components/SpotCard";
+import BackButton from "../../components/BackButton";
 import { Colors, Typography } from "../../constants/Theme";
 import { t } from "../../constants/Translations";
 
@@ -30,7 +31,11 @@ export default function DistrictListScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
+        <View style={styles.navRow}>
+          <BackButton />
+        </View>
         <Text style={styles.title}>{district}</Text>
         <Text style={styles.subtitle}>{spots.length} {t.spots}</Text>
       </View>
@@ -51,7 +56,10 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    paddingTop: 60,
+    paddingTop: 40,
+  },
+  navRow: {
+    marginBottom: 12,
   },
   title: {
     ...Typography.titleLGMobile,

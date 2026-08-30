@@ -119,6 +119,7 @@ Stores user favorites (many‑to‑many relation between profiles and spots).
 - Silence
 - Weird
 - Bars
+- Art
 
 ### Districts (string list)
 

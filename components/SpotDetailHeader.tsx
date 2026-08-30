@@ -105,13 +105,24 @@ export default function SpotDetailHeader({
           style={styles.modalBackdrop}
           onPress={() => setModalVisible(false)}
         >
-          <Pressable style={styles.modalContent} onPress={() => {}}>
+          <Pressable
+            style={styles.modalContent}
+            onPress={() => setModalVisible(false)}
+          >
             <Image
               source={{ uri: imageUrl }}
               style={styles.modalImage}
               resizeMode="contain"
             />
           </Pressable>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+            activeOpacity={0.7}
+            hitSlop={8}
+          >
+            <Ionicons name="close" size={26} color={Colors.textPrimary} />
+          </TouchableOpacity>
         </Pressable>
       </Modal>
     </>
@@ -175,5 +186,19 @@ const styles = StyleSheet.create({
   modalImage: {
     width: '100%',
     height: '100%',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

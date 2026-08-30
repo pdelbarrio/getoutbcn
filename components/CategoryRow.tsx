@@ -1,162 +1,199 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  AppState,
 } from "react-native";
+import Animated, {
+  scrollTo,
+  useAnimatedRef,
+  useFrameCallback,
+  useSharedValue,
+} from "react-native-reanimated";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
 import { CATEGORIES, CATEGORY_LABELS } from "../constants/Categories";
 
+// Cuántas veces se repite la lista para crear el bucle infinito sin saltos
+const REPEAT = 12;
+// Velocidad del auto-scroll en píxeles por segundo (hacia la izquierda)
+const SPEED = 36;
+// Tiempo de pausa tras una interacción antes de reanudar el scroll
+const RESUME_DELAY_MS = 1800;
+
+// Props no cubiertas por el tipado de AnimatedScrollViewProps (mejoran los taps):
+// no retardar/cancelar el toque aunque la lista se esté moviendo.
+const SCROLL_TOUCH_PROPS = {
+  delaysContentTouches: false,
+  canCancelContentTouches: false,
+  keyboardShouldPersistTaps: "always",
+} as const;
+
 interface CategoryRowProps {
   selectedCategory: string | null;
-  onSelect: (category: string) => void;
+  onSelect: (category: string | null) => void;
 }
 
 export default function CategoryRow({
   selectedCategory,
   onSelect,
 }: CategoryRowProps) {
-  const flatListRef = useRef<FlatList>(null);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const scrollPositionRef = useRef(0);
-  const isUserInteractingRef = useRef(false);
-  
-  // Create a very large array for infinite scrolling illusion
-  const infiniteCategories = Array(200).fill(CATEGORIES).flat();
+  const listRef = useAnimatedRef<Animated.ScrollView>();
+  const progress = useSharedValue(0);
+  const paused = useSharedValue(true);
+  const loopWidth = useSharedValue(0);
+  const startOffset = useSharedValue(0);
 
-  const stopAutoScroll = () => {
-    if (scrollIntervalRef.current) {
-      clearInterval(scrollIntervalRef.current);
-      scrollIntervalRef.current = null;
-    }
-  };
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draggingRef = useRef(false);
+  const [contentWidth, setContentWidth] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(0);
 
-  const startAutoScroll = () => {
-    stopAutoScroll();
-    scrollIntervalRef.current = setInterval(() => {
-      if (!isUserInteractingRef.current) {
-        scrollPositionRef.current += 1;
-        flatListRef.current?.scrollToOffset({
-          offset: scrollPositionRef.current,
-          animated: true,
-        });
-      }
-    }, 30);
-  };
+  const items = useMemo(
+    () => Array.from({ length: REPEAT }, () => CATEGORIES).flat(),
+    [],
+  );
 
-  const handleUserInteraction = () => {
-    isUserInteractingRef.current = true;
-    stopAutoScroll();
-    
-    // Clear any existing resume timeout
-    if (resumeTimeoutRef.current) {
-      clearTimeout(resumeTimeoutRef.current);
-    }
-    
-    // Resume auto-scroll after 3 seconds of no interaction
-    resumeTimeoutRef.current = setTimeout(() => {
-      isUserInteractingRef.current = false;
-      startAutoScroll();
-    }, 3000);
-  };
-
+  // Una vez medidas las dimensiones, configurar el bucle y arrancar el scroll
   useEffect(() => {
-    // Start at middle position
-    setTimeout(() => {
-      flatListRef.current?.scrollToOffset({
-        offset: 1000,
-        animated: false,
-      });
-      scrollPositionRef.current = 1000;
-      
-      // Start auto-scroll after initial delay
-      startAutoScroll();
-    }, 100);
+    if (contentWidth > 0 && viewportWidth > 0 && contentWidth > viewportWidth) {
+      const seq = contentWidth / REPEAT;
+      const maxStart = contentWidth - viewportWidth - seq;
+      const start = Math.min(seq * 2, maxStart);
+      loopWidth.value = seq;
+      startOffset.value = start;
+      progress.value = 0;
+      paused.value = false;
+    }
+  }, [contentWidth, viewportWidth, loopWidth, startOffset, progress, paused]);
 
-    return () => {
-      stopAutoScroll();
-      if (resumeTimeoutRef.current) {
-        clearTimeout(resumeTimeoutRef.current);
+  // Limpiar el temporizador al desmontar o al volver al primer plano
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        clearResumeTimer();
+        paused.value = false;
       }
+    });
+    return () => {
+      sub.remove();
+      clearResumeTimer();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const clearResumeTimer = () => {
+    if (resumeTimeoutRef.current) {
+      clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = null;
+    }
+  };
+
+  // Cualquier pausa SIEMPRE va emparejada con una reanudación programada,
+  // así la fila nunca puede quedarse colgada en pausa.
+  const pauseAndScheduleResume = () => {
+    paused.value = true;
+    clearResumeTimer();
+    resumeTimeoutRef.current = setTimeout(() => {
+      paused.value = false;
+    }, RESUME_DELAY_MS);
+  };
+
+  // Auto-scroll fluido en el UI thread (una vez por frame)
+  useFrameCallback((info) => {
+    if (paused.value || loopWidth.value <= 0) return;
+    const dtSec = Math.min((info.timeSincePreviousFrame ?? 16) / 1000, 0.05);
+    progress.value += SPEED * dtSec;
+    const local = progress.value % loopWidth.value;
+    scrollTo(listRef, startOffset.value + local, 0, false);
+  });
+
+  // Tras un scroll manual, re-sincronizar el progreso con el offset real.
+  // Solo durante arrastro del dedo; el scroll programático no debe re-sincronizar.
+  const syncProgressFromOffset = (offsetX: number) => {
+    if (loopWidth.value > 0) {
+      const local = (offsetX - startOffset.value) % loopWidth.value;
+      progress.value = local < 0 ? local + loopWidth.value : local;
+    }
+  };
+
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const currentOffset = event.nativeEvent.contentOffset.x;
-    const contentWidth = event.nativeEvent.contentSize.width;
-    
-    scrollPositionRef.current = currentOffset;
-    
-    // Reset to middle when approaching edges
-    if (currentOffset < 500) {
-      flatListRef.current?.scrollToOffset({
-        offset: contentWidth / 2,
-        animated: false,
-      });
-      scrollPositionRef.current = contentWidth / 2;
-    } else if (currentOffset > contentWidth - 1000) {
-      flatListRef.current?.scrollToOffset({
-        offset: contentWidth / 2,
-        animated: false,
-      });
-      scrollPositionRef.current = contentWidth / 2;
+    if (draggingRef.current) {
+      syncProgressFromOffset(event.nativeEvent.contentOffset.x);
     }
   };
 
   const handleSelect = (category: string) => {
-    handleUserInteraction();
-    
-    // Toggle: if already selected, deselect it
     if (selectedCategory === category) {
-      onSelect(null as any);
+      onSelect(null);
     } else {
       onSelect(category);
     }
   };
 
-  const renderItem = ({ item }: { item: string; index: number }) => {
-    const isSelected = selectedCategory === item;
-    return (
-      <TouchableOpacity
-        style={[
-          styles.categoryItem,
-          isSelected && styles.categoryItemSelected
-        ]}
-        onPress={() => handleSelect(item)}
-        activeOpacity={0.7}
-      >
-        <Text
-          style={[
-            styles.categoryText,
-            isSelected && styles.categoryTextSelected,
-          ]}
-        >
-          {CATEGORY_LABELS[item]?.toUpperCase() || item.toUpperCase()}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={infiniteCategories}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item}-${index}`}
+      <Animated.ScrollView
+        ref={listRef}
         horizontal
+        {...SCROLL_TOUCH_PROPS}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        onScroll={handleScroll}
         scrollEventThrottle={16}
-        onScrollBeginDrag={handleUserInteraction}
-        onTouchStart={handleUserInteraction}
-      />
+        onContentSizeChange={setContentWidth}
+        onLayout={(e) => setViewportWidth(e.nativeEvent.layout.width)}
+        onScroll={handleScroll}
+        onTouchStart={() => {
+          paused.value = true;
+        }}
+        onTouchEnd={pauseAndScheduleResume}
+        onTouchCancel={pauseAndScheduleResume}
+        onScrollBeginDrag={() => {
+          draggingRef.current = true;
+          paused.value = true;
+        }}
+        onScrollEndDrag={(e) => {
+          draggingRef.current = false;
+          syncProgressFromOffset(e.nativeEvent.contentOffset.x);
+          pauseAndScheduleResume();
+        }}
+        onMomentumScrollEnd={(e) => {
+          syncProgressFromOffset(e.nativeEvent.contentOffset.x);
+          pauseAndScheduleResume();
+        }}
+      >
+        {items.map((item, index) => {
+          const isSelected = selectedCategory === item;
+          return (
+            <Pressable
+              key={`${item}-${index}`}
+              style={[
+                styles.categoryItem,
+                isSelected && styles.categoryItemSelected,
+              ]}
+              onPressIn={() => {
+                paused.value = true;
+              }}
+              onPressOut={pauseAndScheduleResume}
+              onPress={() => handleSelect(item)}
+              hitSlop={6}
+              android_ripple={undefined}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  isSelected && styles.categoryTextSelected,
+                ]}
+              >
+                {CATEGORY_LABELS[item]?.toUpperCase() || item.toUpperCase()}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -176,8 +213,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.tag,
-    borderWidth: 0.5,
-    borderColor: Colors.surfaceHighest,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
     minHeight: 48,
