@@ -1,25 +1,34 @@
-import { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/supabase/auth';
-import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
-import { t } from '../constants/Translations';
+import { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
+import { useRouter, Stack } from "expo-router";
+import { useAuth } from "../contexts/AuthContext";
+import { authService } from "../services/supabase/auth";
+import BackButton from "../components/BackButton";
+import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import { t } from "../constants/Translations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [user, loading]);
 
   async function handleLogout() {
     try {
       await authService.signOut();
-      router.replace('/');
+      router.replace("/");
     } catch (error) {
       console.error(t.errorClosingSession, error);
     }
@@ -38,10 +47,20 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+    >
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
+        <View style={styles.navRow}>
+          <BackButton />
+        </View>
+        <Text style={styles.headerTitle}>{t.profileTitle}</Text>
+      </View>
+
       <View style={styles.content}>
-        <Text style={styles.title}>{t.profileTitle}</Text>
-        
+
         <View style={styles.infoCard}>
           <Text style={styles.label}>{t.emailLabel}</Text>
           <Text style={styles.value}>{user.email}</Text>
@@ -54,7 +73,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
           activeOpacity={0.7}
@@ -73,18 +92,24 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: Spacing.horizontalPadding * 2,
+    paddingTop: 8,
+  },
+  header: {
+    padding: 16,
     paddingTop: 40,
   },
-  title: {
-    ...Typography.titleLG,
+  navRow: {
+    marginBottom: 12,
+  },
+  headerTitle: {
+    ...Typography.titleLGMobile,
     color: Colors.primary,
-    marginBottom: 32,
-    textAlign: 'center',
+    textTransform: "uppercase",
   },
   loadingText: {
     ...Typography.bodyMain,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 40,
   },
   infoCard: {
@@ -110,8 +135,8 @@ const styles = StyleSheet.create({
     height: 52,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 32,
     borderWidth: 1,
     borderColor: Colors.error,
@@ -119,6 +144,6 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     ...Typography.bodyHighlight,
     color: Colors.error,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

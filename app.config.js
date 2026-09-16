@@ -1,11 +1,10 @@
-require('dotenv/config');
-
 const withGoogleMapsApiKey = require('./plugins/withGoogleMapsApiKey');
 
 module.exports = ({ config }) => {
     const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-    // Aplicar el plugin personalizado a la configuración base
     return withGoogleMapsApiKey(
         {
             ...config,
@@ -16,7 +15,6 @@ module.exports = ({ config }) => {
             scheme: "getoutbcn",
             icon: "./assets/icon.png",
             userInterfaceStyle: "light",
-            newArchEnabled: true,
             splash: {
                 image: "./assets/splash-icon.png",
                 resizeMode: "contain",
@@ -32,7 +30,19 @@ module.exports = ({ config }) => {
                 },
                 edgeToEdgeEnabled: true,
                 predictiveBackGestureEnabled: false,
-                package: "com.getoutbcn.app"
+                package: "com.getoutbcn.app",
+                permissions: [
+                    "ACCESS_COARSE_LOCATION",
+                    "ACCESS_FINE_LOCATION",
+                    "INTERNET",
+                    "READ_EXTERNAL_STORAGE",
+                    "READ_MEDIA_IMAGES",
+                    "READ_MEDIA_VIDEO",
+                    "RECORD_AUDIO",
+                    "SYSTEM_ALERT_WINDOW",
+                    "VIBRATE",
+                    "WRITE_EXTERNAL_STORAGE"
+                ]
             },
             web: {
                 favicon: "./assets/favicon.png"
@@ -44,10 +54,23 @@ module.exports = ({ config }) => {
                     {
                         experimentalLauncherActivity: false
                     }
-                ]
-                // ¡QUITADO el plugin de react-native-maps!
+                ],
+                [
+                    "expo-build-properties",
+                    {
+                        android: {
+                            newArchEnabled: true,
+                        },
+                        ios: {
+                            newArchEnabled: true,
+                        },
+                    },
+                ],
             ],
             extra: {
+                supabaseUrl: supabaseUrl,
+                supabaseAnonKey: supabaseAnonKey,
+                googleMapsApiKey: apiKey,
                 router: {},
                 eas: {
                     projectId: "bfdf96a2-6eed-4f5b-b9f8-8193a068e973"

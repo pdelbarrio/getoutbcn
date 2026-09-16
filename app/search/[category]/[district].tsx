@@ -7,8 +7,10 @@ import SpotCard from "../../../components/SpotCard";
 import BackButton from "../../../components/BackButton";
 import { Colors, Typography } from "../../../constants/Theme";
 import { t } from "../../../constants/Translations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CategoryDistrictListScreen() {
+  const insets = useSafeAreaInsets();
   const { category, district } = useLocalSearchParams();
   const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,13 +44,18 @@ export default function CategoryDistrictListScreen() {
         <Text style={styles.title}>
           {category} × {district}
         </Text>
-        <Text style={styles.subtitle}>{spots.length} {t.spots}</Text>
+        <Text style={styles.subtitle}>
+          {spots.length} {t.spots}
+        </Text>
       </View>
       <FlatList
         data={spots}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <SpotCard spot={item} />}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: insets.bottom + 20 },
+        ]}
       />
     </View>
   );

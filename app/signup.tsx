@@ -1,24 +1,35 @@
-import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { authService } from '../services/supabase/auth';
-import { profilesService } from '../services/supabase/profiles';
-import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
-import { t } from '../constants/Translations';
+import { useState } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { authService } from "../services/supabase/auth";
+import { profilesService } from "../services/supabase/profiles";
+import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import { t } from "../constants/Translations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSignUp() {
-    setError('');
+    setError("");
 
     // Validations
-    if (!email.includes('@')) {
+    if (!email.includes("@")) {
       setError(t.invalidEmail);
       return;
     }
@@ -47,7 +58,7 @@ export default function SignUpScreen() {
         email: email,
       });
 
-      router.replace('/');
+      router.replace("/");
     } catch (err: any) {
       setError(err.message || t.errorCreatingAccount);
     } finally {
@@ -56,17 +67,20 @@ export default function SignUpScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 20 },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
           <Text style={styles.title}>{t.signUp}</Text>
-          
+
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -77,7 +91,7 @@ export default function SignUpScreen() {
             keyboardType="email-address"
             editable={!loading}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholder={t.password}
@@ -87,7 +101,7 @@ export default function SignUpScreen() {
             secureTextEntry
             editable={!loading}
           />
-          
+
           <TextInput
             style={styles.input}
             placeholder={t.confirmPassword}
@@ -97,27 +111,28 @@ export default function SignUpScreen() {
             secureTextEntry
             editable={!loading}
           />
-          
+
           {error && <Text style={styles.errorText}>{error}</Text>}
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSignUp}
             disabled={loading}
             activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'CREANT COMPTE...' : t.signUp}
+              {loading ? "CREANT COMPTE..." : t.signUp}
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => router.push('/login')}
+            onPress={() => router.push("/login")}
             disabled={loading}
           >
             <Text style={styles.linkText}>
-              {t.alreadyHaveAccount} <Text style={styles.linkTextHighlight}>{t.signIn}</Text>
+              {t.alreadyHaveAccount}{" "}
+              <Text style={styles.linkTextHighlight}>{t.signIn}</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -133,7 +148,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   content: {
     paddingHorizontal: Spacing.horizontalPadding * 2,
@@ -143,7 +158,7 @@ const styles = StyleSheet.create({
     ...Typography.titleLG,
     color: Colors.primary,
     marginBottom: 32,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     height: 48,
@@ -158,8 +173,8 @@ const styles = StyleSheet.create({
     height: 52,
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 8,
   },
   buttonDisabled: {
@@ -168,17 +183,17 @@ const styles = StyleSheet.create({
   buttonText: {
     ...Typography.bodyHighlight,
     color: Colors.onPrimary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   errorText: {
     color: Colors.error,
     fontSize: 14,
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   linkButton: {
     marginTop: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   linkText: {
     ...Typography.bodyMain,
@@ -186,6 +201,6 @@ const styles = StyleSheet.create({
   },
   linkTextHighlight: {
     color: Colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

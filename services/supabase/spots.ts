@@ -1,95 +1,88 @@
 import { supabase } from "./client";
 import { Spot } from "./types";
+import { calculateDistance } from "../../utils/geolocation";
+
+const SPOT_LIST_FIELDS =
+  "id, name, image_url, category, district, latitude, longitude";
+const SPOT_DETAIL_FIELDS =
+  "id, name, description, image_url, website, category, district, latitude, longitude, tags, address";
 
 export const spotsService = {
-  async getAll(): Promise<Spot[]> {
-    const { data, error } = await supabase.from("spots").select("*");
-    if (error) throw error;
-    return data || [];
-  },
-
   async getById(id: string): Promise<Spot | null> {
     const { data, error } = await supabase
       .from("spots")
-      .select("*")
+      .select(SPOT_DETAIL_FIELDS)
       .eq("id", id)
       .single();
     if (error) throw error;
-    return data;
+    return data as unknown as Spot | null;
   },
 
   async getByCategory(category: string): Promise<Spot[]> {
-    const [catResults, tagResults] = await Promise.all([
-      supabase
-        .from("spots")
-        .select("*")
-        .eq("category", category),
-      supabase
-        .from("spots")
-        .select("*")
-        .contains("tags", [category.toLowerCase()]),
-    ]);
-    if (catResults.error) throw catResults.error;
-    if (tagResults.error) throw tagResults.error;
-    const map = new Map<string, Spot>();
-    for (const spot of [...(catResults.data || []), ...(tagResults.data || [])]) {
-      map.set(spot.id, spot);
-    }
-    return Array.from(map.values());
+    const tag = category.toLowerCase();
+    const { data, error } = await supabase
+      .from("spots")
+      .select(SPOT_LIST_FIELDS)
+      .or(`category.eq.${category},tags.cs.{"${tag}"}`);
+    if (error) throw error;
+    return (data || []) as unknown as Spot[];
   },
 
   async getByDistrict(district: string): Promise<Spot[]> {
     const { data, error } = await supabase
       .from("spots")
-      .select("*")
+      .select(SPOT_LIST_FIELDS)
       .eq("district", district);
     if (error) throw error;
-    return data || [];
+    return (data || []) as unknown as Spot[];
   },
 
   async getByTag(tag: string): Promise<Spot[]> {
     const { data, error } = await supabase
       .from("spots")
-      .select("*")
+      .select(SPOT_LIST_FIELDS)
       .contains("tags", [tag]);
     if (error) throw error;
-    return data || [];
+    return (data || []) as unknown as Spot[];
   },
 
   async getByCategoryAndDistrict(
     category: string,
     district: string,
   ): Promise<Spot[]> {
-    const [catResults, tagResults] = await Promise.all([
-      supabase
-        .from("spots")
-        .select("*")
-        .eq("category", category)
-        .eq("district", district),
-      supabase
-        .from("spots")
-        .select("*")
-        .contains("tags", [category.toLowerCase()])
-        .eq("district", district),
-    ]);
-    if (catResults.error) throw catResults.error;
-    if (tagResults.error) throw tagResults.error;
-    const map = new Map<string, Spot>();
-    for (const spot of [...(catResults.data || []), ...(tagResults.data || [])]) {
-      map.set(spot.id, spot);
-    }
-    return Array.from(map.values());
+    const tag = category.toLowerCase();
+    const { data, error } = await supabase
+      .from("spots")
+      .select(SPOT_LIST_FIELDS)
+      .eq("district", district)
+      .or(`category.eq.${category},tags.cs.{"${tag}"}`);
+    if (error) throw error;
+    return (data || []) as unknown as Spot[];
   },
 
   async getRandom(): Promise<Spot | null> {
-    const { data, error } = await supabase.from("spots").select("*");
+    const { data, error } = await supabase.rpc("get_random_spot").maybeSingle();
     if (error) throw error;
-    if (!data || data.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * data.length);
-    return data[randomIndex];
+    return (data as unknown as Spot) || null;
   },
 
-  async create(spot: Omit<Spot, "id" | "created_at">): Promise<Spot> {
+  async getNearest(
+    lat: number,
+    lon: number,
+  ): Promise<{ spot: Spot; distance: number } | null> {
+    const { data, error } = await supabase
+      .rpc("get_nearest_spot", { user_lat: lat, user_lon: lon })
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const spot = data as Spot;
+    const distance = calculateDistance(lat, lon, spot.latitude, spot.longitude);
+    return { spot, distance };
+  },
+
+  async create(
+    spot: Omit<Spot, "id" | "created_at" | "created_by">,
+  ): Promise<Spot> {
     const { data, error } = await supabase
       .from("spots")
       .insert(spot)

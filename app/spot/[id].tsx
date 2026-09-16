@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Alert } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { spotsService } from "../../services/supabase/spots";
 import { favoritesService } from "../../services/supabase/favorites";
 import { useAuth } from "../../contexts/AuthContext";
@@ -17,6 +18,7 @@ import { Colors, Typography, Spacing } from "../../constants/Theme";
 import { t } from "../../constants/Translations";
 
 export default function SpotDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
   const [spot, setSpot] = useState<Spot | null>(null);
@@ -48,6 +50,7 @@ export default function SpotDetailScreen() {
       setIsFavorite(fav);
     } catch (error) {
       console.error("Error checking favorite:", error);
+      setIsFavorite(false);
     }
   }
 
@@ -58,11 +61,12 @@ export default function SpotDetailScreen() {
       if (isFavorite) {
         await favoritesService.remove(user.id, id as string);
       } else {
-        await favoritesService.add(user.id, id as string);
+        await favoritesService.add(id as string);
       }
       setIsFavorite(!isFavorite);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling favorite:", error);
+      Alert.alert(t.error, error?.message || t.errorLoadingFavorites);
     }
   }
 
@@ -71,13 +75,14 @@ export default function SpotDetailScreen() {
   }
 
   if (error || !spot) {
-    return (
-      <ErrorMessage message={error || t.notFound} onRetry={loadSpot} />
-    );
+    return <ErrorMessage message={error || t.notFound} onRetry={loadSpot} />;
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <SpotDetailHeader
         imageUrl={spot.image_url}

@@ -1,39 +1,55 @@
-import { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView, Alert, Image, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext';
-import { spotsService } from '../services/supabase/spots';
-import { storageService } from '../services/supabase/storage';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { Colors, Typography, BorderRadius, Spacing } from '../constants/Theme';
-import { CATEGORIES, CATEGORY_LABELS } from '../constants/Categories';
-import { DISTRICTS } from '../constants/Districts';
-import { t } from '../constants/Translations';
-import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useState, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  Image,
+  Modal,
+} from "react-native";
+import { useRouter, Stack } from "expo-router";
+import { useAuth } from "../contexts/AuthContext";
+import { spotsService } from "../services/supabase/spots";
+import { storageService } from "../services/supabase/storage";
+import LoadingSpinner from "../components/LoadingSpinner";
+import BackButton from "../components/BackButton";
+import { Colors, Typography, BorderRadius, Spacing } from "../constants/Theme";
+import { CATEGORIES, CATEGORY_LABELS } from "../constants/Categories";
+import { DISTRICTS } from "../constants/Districts";
+import { t } from "../constants/Translations";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AddSpotScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [website, setWebsite] = useState('');
-  const [category, setCategory] = useState('');
-  const [district, setDistrict] = useState('');
-  const [imageUri, setImageUri] = useState('');
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [website, setWebsite] = useState("");
+  const [category, setCategory] = useState("");
+  const [district, setDistrict] = useState("");
+  const [imageUri, setImageUri] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [latitudeText, setLatitudeText] = useState('');
-  const [longitudeText, setLongitudeText] = useState('');
-  const [address, setAddress] = useState('');
+  const [tagInput, setTagInput] = useState("");
+  const [latitudeText, setLatitudeText] = useState("");
+  const [longitudeText, setLongitudeText] = useState("");
+  const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showDistrictPicker, setShowDistrictPicker] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [mapRegion, setMapRegion] = useState({
     latitude: 41.3874,
     longitude: 2.1686,
@@ -43,15 +59,16 @@ export default function AddSpotScreen() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login');
+      router.replace("/login");
     }
   }, [user, authLoading]);
 
   async function handlePickImage() {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== "granted") {
         Alert.alert(t.permissionDenied, t.galleryPermissionDenied);
         return;
       }
@@ -73,8 +90,8 @@ export default function AddSpotScreen() {
     try {
       setLoading(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status !== 'granted') {
+
+      if (status !== "granted") {
         Alert.alert(t.permissionDenied, t.locationPermissionDenied);
         return;
       }
@@ -96,8 +113,8 @@ export default function AddSpotScreen() {
   async function handleOpenMapPicker() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
-      if (status === 'granted') {
+
+      if (status === "granted") {
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
@@ -124,7 +141,7 @@ export default function AddSpotScreen() {
           longitude: 2.1686,
         });
       }
-      
+
       setShowMapModal(true);
     } catch (error) {
       // Si falla, centramos en Barcelona
@@ -175,7 +192,7 @@ export default function AddSpotScreen() {
     }
 
     setTags([...tags, trimmedTag]);
-    setTagInput('');
+    setTagInput("");
   }
 
   function handleRemoveTag(index: number) {
@@ -227,8 +244,8 @@ export default function AddSpotScreen() {
 
       // Create spot with uploaded image URL
       const newSpot = await spotsService.create({
-        name: name.trim() || 'Sin nombre',
-        description: description.trim() || 'Sin descripción',
+        name: name.trim() || "Sin nombre",
+        description: description.trim() || "Sin descripción",
         website: website.trim() || undefined,
         category,
         district,
@@ -237,12 +254,11 @@ export default function AddSpotScreen() {
         image_url: imageUrl,
         tags: tags.length > 0 ? tags : undefined,
         address: address.trim() || undefined,
-        created_by: user!.id,
       });
 
-      Alert.alert('Èxit', 'Lloc creat correctament', [
+      Alert.alert("Èxit", "Lloc creat correctament", [
         {
-          text: 'Veure lloc',
+          text: "Veure lloc",
           onPress: () => router.replace(`/spot/${newSpot.id}`),
         },
       ]);
@@ -263,9 +279,19 @@ export default function AddSpotScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+    >
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.header}>
+        <View style={styles.navRow}>
+          <BackButton />
+        </View>
+        <Text style={styles.headerTitle}>{t.addSpotTitle}</Text>
+      </View>
+
       <View style={styles.content}>
-        <Text style={styles.title}>{t.addSpotTitle}</Text>
 
         <Text style={styles.label}>{t.nameRequired}</Text>
         <TextInput
@@ -308,20 +334,32 @@ export default function AddSpotScreen() {
           disabled={loading}
           activeOpacity={0.7}
         >
-          <Text style={category ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
-            {category ? CATEGORY_LABELS[category] || category : t.selectCategory}
+          <Text
+            style={
+              category
+                ? styles.pickerButtonTextSelected
+                : styles.pickerButtonTextPlaceholder
+            }
+          >
+            {category
+              ? CATEGORY_LABELS[category] || category
+              : t.selectCategory}
           </Text>
         </TouchableOpacity>
 
         {showCategoryPicker && (
           <View style={styles.pickerContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.pickerScroll}
+            >
               {CATEGORIES.map((cat) => (
                 <TouchableOpacity
                   key={cat}
                   style={[
                     styles.pickerItem,
-                    category === cat && styles.pickerItemSelected
+                    category === cat && styles.pickerItemSelected,
                   ]}
                   onPress={() => {
                     setCategory(cat);
@@ -329,10 +367,12 @@ export default function AddSpotScreen() {
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[
-                    styles.pickerItemText,
-                    category === cat && styles.pickerItemTextSelected
-                  ]}>
+                  <Text
+                    style={[
+                      styles.pickerItemText,
+                      category === cat && styles.pickerItemTextSelected,
+                    ]}
+                  >
                     {CATEGORY_LABELS[cat] || cat}
                   </Text>
                 </TouchableOpacity>
@@ -348,20 +388,30 @@ export default function AddSpotScreen() {
           disabled={loading}
           activeOpacity={0.7}
         >
-          <Text style={district ? styles.pickerButtonTextSelected : styles.pickerButtonTextPlaceholder}>
+          <Text
+            style={
+              district
+                ? styles.pickerButtonTextSelected
+                : styles.pickerButtonTextPlaceholder
+            }
+          >
             {district || t.selectDistrict}
           </Text>
         </TouchableOpacity>
 
         {showDistrictPicker && (
           <View style={styles.pickerContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pickerScroll}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.pickerScroll}
+            >
               {DISTRICTS.map((dist) => (
                 <TouchableOpacity
                   key={dist}
                   style={[
                     styles.pickerItem,
-                    district === dist && styles.pickerItemSelected
+                    district === dist && styles.pickerItemSelected,
                   ]}
                   onPress={() => {
                     setDistrict(dist);
@@ -369,10 +419,12 @@ export default function AddSpotScreen() {
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[
-                    styles.pickerItemText,
-                    district === dist && styles.pickerItemTextSelected
-                  ]}>
+                  <Text
+                    style={[
+                      styles.pickerItemText,
+                      district === dist && styles.pickerItemTextSelected,
+                    ]}
+                  >
                     {dist}
                   </Text>
                 </TouchableOpacity>
@@ -398,7 +450,7 @@ export default function AddSpotScreen() {
             <Image source={{ uri: imageUri }} style={styles.imagePreview} />
             <TouchableOpacity
               style={styles.imageRemoveButton}
-              onPress={() => setImageUri('')}
+              onPress={() => setImageUri("")}
               activeOpacity={0.7}
             >
               <Text style={styles.imageRemoveText}>✕</Text>
@@ -407,7 +459,7 @@ export default function AddSpotScreen() {
         )}
 
         <Text style={styles.label}>{t.locationOptional}</Text>
-        
+
         <View style={styles.locationButtonsContainer}>
           <TouchableOpacity
             style={[styles.locationButton, styles.locationButtonHalf]}
@@ -472,7 +524,10 @@ export default function AddSpotScreen() {
             onSubmitEditing={handleAddTag}
           />
           <TouchableOpacity
-            style={[styles.tagAddButton, (loading || tags.length >= 3) && styles.tagAddButtonDisabled]}
+            style={[
+              styles.tagAddButton,
+              (loading || tags.length >= 3) && styles.tagAddButtonDisabled,
+            ]}
             onPress={handleAddTag}
             disabled={loading || tags.length >= 3}
             activeOpacity={0.7}
@@ -568,11 +623,17 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 40,
   },
-  title: {
-    ...Typography.titleLG,
+  header: {
+    padding: 16,
+    paddingTop: 40,
+  },
+  navRow: {
+    marginBottom: 12,
+  },
+  headerTitle: {
+    ...Typography.titleLGMobile,
     color: Colors.primary,
-    marginBottom: 32,
-    textAlign: 'center',
+    textTransform: "uppercase",
   },
   label: {
     ...Typography.industrialLabel,
@@ -592,14 +653,14 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     paddingTop: 12,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   pickerButton: {
     height: 48,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.button,
     paddingHorizontal: 16,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginBottom: 8,
   },
   pickerButtonTextPlaceholder: {
@@ -609,7 +670,7 @@ const styles = StyleSheet.create({
   pickerButtonTextSelected: {
     color: Colors.textPrimary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   pickerContainer: {
     backgroundColor: Colors.surfaceHighest,
@@ -637,51 +698,51 @@ const styles = StyleSheet.create({
   },
   pickerItemTextSelected: {
     color: Colors.onPrimary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   imageButton: {
     height: 48,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   imageButtonText: {
     color: Colors.textPrimary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   imagePreviewContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 16,
     borderRadius: BorderRadius.card,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   imagePreview: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: BorderRadius.card,
   },
   imageRemoveButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
     width: 32,
     height: 32,
     backgroundColor: Colors.error,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   imageRemoveText: {
     color: Colors.textPrimary,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   locationButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 16,
     gap: 8,
   },
@@ -689,8 +750,8 @@ const styles = StyleSheet.create({
     height: 48,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   locationButtonHalf: {
     flex: 1,
@@ -698,7 +759,7 @@ const styles = StyleSheet.create({
   locationButtonText: {
     color: Colors.textPrimary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   modalContainer: {
     flex: 1,
@@ -712,19 +773,19 @@ const styles = StyleSheet.create({
   modalTitle: {
     ...Typography.titleLGMobile,
     color: Colors.primary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 4,
   },
   modalSubtitle: {
     ...Typography.bodyMain,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   map: {
     flex: 1,
   },
   modalFooter: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     backgroundColor: Colors.surface,
     gap: 12,
@@ -734,29 +795,29 @@ const styles = StyleSheet.create({
     height: 52,
     backgroundColor: Colors.surfaceHigh,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalButtonTextCancel: {
     ...Typography.bodyHighlight,
     color: Colors.textPrimary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   modalButtonConfirm: {
     flex: 1,
     height: 52,
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalButtonTextConfirm: {
     ...Typography.bodyHighlight,
     color: Colors.onPrimary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   tagInputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
   },
   tagInput: {
@@ -774,8 +835,8 @@ const styles = StyleSheet.create({
     height: 48,
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   tagAddButtonDisabled: {
     opacity: 0.3,
@@ -783,16 +844,16 @@ const styles = StyleSheet.create({
   tagAddButtonText: {
     color: Colors.onPrimary,
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 16,
   },
   tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.surfaceHighest,
     borderRadius: BorderRadius.tag,
     paddingLeft: 12,
@@ -809,20 +870,20 @@ const styles = StyleSheet.create({
   tagRemove: {
     width: 20,
     height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   tagRemoveText: {
     color: Colors.textMuted,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   button: {
     height: 52,
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.button,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 24,
   },
   buttonDisabled: {
@@ -831,6 +892,6 @@ const styles = StyleSheet.create({
   buttonText: {
     ...Typography.bodyHighlight,
     color: Colors.onPrimary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

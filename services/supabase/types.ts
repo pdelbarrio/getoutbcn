@@ -10,8 +10,8 @@ export type Spot = {
   longitude: number;
   tags?: string[];
   address?: string;
-  created_by: string;
   created_at: string;
+  created_by: string;
 };
 
 export type Profile = {

@@ -1,20 +1,44 @@
 import { supabase } from "./client";
-import { Favorite } from "./types";
+import { Favorite, Spot } from "./types";
+
+const SPOT_LIST_FIELDS =
+  "id, name, image_url, category, district, latitude, longitude";
 
 export const favoritesService = {
   async getByUserId(userId: string): Promise<Favorite[]> {
     const { data, error } = await supabase
       .from("favorites")
-      .select("*")
+      .select("id, user_id, spot_id, created_at")
       .eq("user_id", userId);
     if (error) throw error;
-    return data || [];
+    return (data || []) as unknown as Favorite[];
   },
 
-  async add(userId: string, spotId: string): Promise<Favorite> {
+  async getSpotsByUserId(userId: string): Promise<Spot[]> {
     const { data, error } = await supabase
       .from("favorites")
-      .insert({ user_id: userId, spot_id: spotId })
+      .select(`spot_id, spots (${SPOT_LIST_FIELDS})`)
+      .eq("user_id", userId);
+    if (error) throw error;
+    const spots = (data || [])
+      .flatMap((f) => (Array.isArray(f.spots) ? f.spots : [f.spots]))
+      .filter((s): s is never => !!s);
+    return spots as unknown as Spot[];
+  },
+
+  async getFavoriteSpotIds(userId: string): Promise<Set<string>> {
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("spot_id")
+      .eq("user_id", userId);
+    if (error) throw error;
+    return new Set((data || []).map((f) => f.spot_id));
+  },
+
+  async add(spotId: string): Promise<Favorite> {
+    const { data, error } = await supabase
+      .from("favorites")
+      .insert({ spot_id: spotId })
       .select()
       .single();
     if (error) throw error;
@@ -36,7 +60,8 @@ export const favoritesService = {
       .select("id")
       .eq("user_id", userId)
       .eq("spot_id", spotId)
-      .single();
-    return !!data && !error;
+      .maybeSingle();
+    if (error) throw error;
+    return !!data;
   },
 };

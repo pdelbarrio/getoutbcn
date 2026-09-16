@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { spotsService } from "../services/supabase/spots";
@@ -20,9 +21,9 @@ import NearbySpotCard from "../components/NearbySpotCard";
 import { Colors, Typography, BorderRadius } from "../constants/Theme";
 import { t } from "../constants/Translations";
 import * as Location from "expo-location";
-import { findNearestSpot } from "../utils/geolocation";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -78,8 +79,7 @@ export default function HomeScreen() {
 
   async function loadNearbySpot(userLat: number, userLon: number) {
     try {
-      const allSpots = await spotsService.getAll();
-      const nearest = findNearestSpot(userLat, userLon, allSpots);
+      const nearest = await spotsService.getNearest(userLat, userLon);
 
       if (nearest) {
         setNearbySpot(nearest.spot);
@@ -103,7 +103,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
         <View style={styles.header}>
           <Image
             source={require("../assets/images/logo2.png")}
