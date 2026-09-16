@@ -58,12 +58,11 @@ export default function SpotDetailScreen() {
     if (!user) return;
 
     try {
-      if (isFavorite) {
-        await favoritesService.remove(user.id, id as string);
-      } else {
-        await favoritesService.add(id as string);
-      }
-      setIsFavorite(!isFavorite);
+      // Llamamos a la RPC que hace todo el trabajo en el servidor
+      const result = await favoritesService.toggleFavorite(id as string);
+
+      // Actualizamos el estado visual basado en lo que devuelva la base de datos
+      setIsFavorite(result === "added");
     } catch (error: any) {
       console.error("Error toggling favorite:", error);
       Alert.alert(t.error, error?.message || t.errorLoadingFavorites);

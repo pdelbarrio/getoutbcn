@@ -1,9 +1,9 @@
 name: Build Android APK
 
 on:
-  push:
-    branches:
-      - main # Se ejecuta al hacer push a la rama main
+  # push:
+  #   branches:
+  #     - main # Se ejecuta al hacer push a la rama main
   workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
 
 jobs:

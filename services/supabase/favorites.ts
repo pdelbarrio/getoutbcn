@@ -44,6 +44,13 @@ export const favoritesService = {
     if (error) throw error;
     return data;
   },
+  async toggleFavorite(spotId: string): Promise<"added" | "removed"> {
+    const { data, error } = await supabase.rpc("toggle_favorite", {
+      p_spot_id: spotId,
+    });
+    if (error) throw error;
+    return data as "added" | "removed";
+  },
 
   async remove(userId: string, spotId: string): Promise<void> {
     const { error } = await supabase
