@@ -8,7 +8,7 @@ module.exports = ({ config }) => {
     return withGoogleMapsApiKey(
         {
             ...config,
-            name: "getoutbcn",
+            name: "GetOut BCN",
             slug: "getoutbcn",
             version: "1.0.0",
             orientation: "portrait",
@@ -18,7 +18,7 @@ module.exports = ({ config }) => {
             splash: {
                 image: "./assets/splash-icon.png",
                 resizeMode: "contain",
-                backgroundColor: "#ffffff"
+                backgroundColor: "#000000"
             },
             ios: {
                 supportsTablet: true
@@ -26,7 +26,7 @@ module.exports = ({ config }) => {
             android: {
                 adaptiveIcon: {
                     foregroundImage: "./assets/adaptive-icon.png",
-                    backgroundColor: "#ffffff"
+                    backgroundColor: "#000000"
                 },
                 edgeToEdgeEnabled: true,
                 predictiveBackGestureEnabled: false,
