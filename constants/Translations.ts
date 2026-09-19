@@ -82,6 +82,9 @@ export const t = {
   notFound: 'Lloc no trobat',
   loadingSpot: 'Carregant lloc...',
   noSpotsInCategory: 'No hi ha llocs en aquesta categoria',
+  noSpotsInDistrict: 'No hi ha llocs en aquest districte',
+  noSpotsInTag: 'No hi ha llocs amb aquesta etiqueta',
+  noSpotsInSearch: 'No hi ha resultats per a aquesta cerca',
   howToGetThere: 'Com arribar-hi',
 
   // Nearby Spots

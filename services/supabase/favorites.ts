@@ -14,16 +14,22 @@ export const favoritesService = {
     return (data || []) as unknown as Favorite[];
   },
 
-  async getSpotsByUserId(userId: string): Promise<Spot[]> {
-    const { data, error } = await supabase
+  async getSpotsByUserId(
+    userId: string,
+    from: number,
+    to: number,
+  ): Promise<{ data: Spot[]; count: number | null }> {
+    const { data, error, count } = await supabase
       .from("favorites")
-      .select(`spot_id, spots (${SPOT_LIST_FIELDS})`)
-      .eq("user_id", userId);
+      .select(`spot_id, spots (${SPOT_LIST_FIELDS})`, { count: "exact" })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
     if (error) throw error;
     const spots = (data || [])
       .flatMap((f) => (Array.isArray(f.spots) ? f.spots : [f.spots]))
       .filter((s): s is never => !!s);
-    return spots as unknown as Spot[];
+    return { data: spots as unknown as Spot[], count };
   },
 
   async getFavoriteSpotIds(userId: string): Promise<Set<string>> {

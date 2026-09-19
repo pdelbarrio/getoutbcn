@@ -34,36 +34,52 @@ export const spotsService = {
     return { data: (data || []) as unknown as Spot[], count };
   },
 
-  async getByDistrict(district: string): Promise<Spot[]> {
-    const { data, error } = await supabase
+  async getByDistrict(
+    district: string,
+    from: number,
+    to: number,
+  ): Promise<{ data: Spot[]; count: number | null }> {
+    const { data, error, count } = await supabase
       .from("spots")
-      .select(SPOT_LIST_FIELDS)
-      .eq("district", district);
+      .select(SPOT_LIST_FIELDS, { count: "exact" })
+      .eq("district", district)
+      .order("created_at", { ascending: false })
+      .range(from, to);
     if (error) throw error;
-    return (data || []) as unknown as Spot[];
+    return { data: (data || []) as unknown as Spot[], count };
   },
 
-  async getByTag(tag: string): Promise<Spot[]> {
-    const { data, error } = await supabase
+  async getByTag(
+    tag: string,
+    from: number,
+    to: number,
+  ): Promise<{ data: Spot[]; count: number | null }> {
+    const { data, error, count } = await supabase
       .from("spots")
-      .select(SPOT_LIST_FIELDS)
-      .contains("tags", [tag]);
+      .select(SPOT_LIST_FIELDS, { count: "exact" })
+      .contains("tags", [tag])
+      .order("created_at", { ascending: false })
+      .range(from, to);
     if (error) throw error;
-    return (data || []) as unknown as Spot[];
+    return { data: (data || []) as unknown as Spot[], count };
   },
 
   async getByCategoryAndDistrict(
     category: string,
     district: string,
-  ): Promise<Spot[]> {
+    from: number,
+    to: number,
+  ): Promise<{ data: Spot[]; count: number | null }> {
     const tag = category.toLowerCase();
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from("spots")
-      .select(SPOT_LIST_FIELDS)
+      .select(SPOT_LIST_FIELDS, { count: "exact" })
       .eq("district", district)
-      .or(`category.eq.${category},tags.cs.{"${tag}"}`);
+      .or(`category.eq.${category},tags.cs.{"${tag}"}`)
+      .order("created_at", { ascending: false })
+      .range(from, to);
     if (error) throw error;
-    return (data || []) as unknown as Spot[];
+    return { data: (data || []) as unknown as Spot[], count };
   },
 
   async getRandom(): Promise<Spot | null> {

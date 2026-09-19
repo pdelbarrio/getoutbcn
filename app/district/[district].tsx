@@ -1,34 +1,39 @@
-import { useEffect, useState } from "react";
-import { View, FlatList, StyleSheet, Text } from "react-native";
+import { View, FlatList, StyleSheet, Text, ActivityIndicator, RefreshControl } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { spotsService } from "../../services/supabase/spots";
-import { Spot } from "../../services/supabase/types";
 import SpotCard from "../../components/SpotCard";
 import BackButton from "../../components/BackButton";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import ErrorMessage from "../../components/ErrorMessage";
 import { Colors, Typography } from "../../constants/Theme";
 import { t } from "../../constants/Translations";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { usePaginatedSpots } from "../../hooks/usePaginatedSpots";
 
 export default function DistrictListScreen() {
   const insets = useSafeAreaInsets();
   const { district } = useLocalSearchParams();
-  const [spots, setSpots] = useState<Spot[]>([]);
-  const [loading, setLoading] = useState(true);
+  const districtKey = (district as string) || "";
 
-  useEffect(() => {
-    loadSpots();
-  }, [district]);
+  const {
+    items,
+    count,
+    loading,
+    loadingMore,
+    refreshing,
+    error,
+    loadMore,
+    refresh,
+  } = usePaginatedSpots(districtKey, (from, to) =>
+    spotsService.getByDistrict(districtKey, from, to),
+  );
 
-  async function loadSpots() {
-    try {
-      setLoading(true);
-      const data = await spotsService.getByDistrict(district as string);
-      setSpots(data);
-    } catch (error) {
-      console.error("Error loading spots:", error);
-    } finally {
-      setLoading(false);
-    }
+  if (loading) {
+    return <LoadingSpinner message={t.loading} />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} onRetry={refresh} />;
   }
 
   return (
@@ -40,17 +45,38 @@ export default function DistrictListScreen() {
         </View>
         <Text style={styles.title}>{district}</Text>
         <Text style={styles.subtitle}>
-          {spots.length} {t.spots}
+          {count ?? items.length} {t.spots}
         </Text>
       </View>
       <FlatList
-        data={spots}
+        data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <SpotCard spot={item} />}
         contentContainerStyle={[
           styles.listContent,
           { paddingBottom: insets.bottom + 20 },
         ]}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={Colors.primary}
+          />
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator
+              size="small"
+              color={Colors.primary}
+              style={styles.footerLoader}
+            />
+          ) : null
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>{t.noSpotsInDistrict}</Text>
+        }
       />
     </View>
   );
@@ -80,5 +106,14 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 16,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+  },
+  emptyText: {
+    ...Typography.bodyMain,
+    color: Colors.textSecondary,
+    textAlign: "center",
+    marginTop: 40,
   },
 });
