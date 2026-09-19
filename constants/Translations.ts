@@ -23,6 +23,7 @@ export const t = {
   login: 'Iniciar sessió',
   addSpot: '+ Lloc',
   profile: 'Perfil',
+  seeAllNearby: 'VEURE TOTS ELS PROPERS',
 
   // Auth
   email: 'Correu electrònic',
@@ -80,6 +81,12 @@ export const t = {
   spotDetail: 'Detall del lloc',
   notFound: 'Lloc no trobat',
   loadingSpot: 'Carregant lloc...',
+  howToGetThere: 'Com arribar-hi',
+
+  // Nearby Spots
+  nearbySpots: 'LLOCS PROPERS',
+  loadingNearby: 'Carregant llocs propers...',
+  noNearbySpots: 'No hi ha llocs propers',
 
   // Favorites
   favorites: 'Favorits',
@@ -93,6 +100,7 @@ export const t = {
   errorCreatingSpot: 'No s\'ha pogut crear el lloc',
   errorUploadingImage: 'No s\'ha pogut pujar la imatge',
   errorInvalidCoordinates: 'Les coordenades no són vàlides. Han de ser números.',
+  errorOpenMaps: 'No s\'ha pogut obrir l\'aplicació de mapes',
   categoryRequiredError: 'Has de seleccionar una categoria',
   districtRequiredError: 'Has de seleccionar un districte',
   imageRequiredError: 'Has de seleccionar una imatge',

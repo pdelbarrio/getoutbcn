@@ -173,7 +173,17 @@ export default function HomeScreen() {
         />
 
         {nearbySpot && (
-          <NearbySpotCard spot={nearbySpot} distance={nearbyDistance} />
+          <View style={styles.nearbySection}>
+            <NearbySpotCard spot={nearbySpot} distance={nearbyDistance} />
+            <TouchableOpacity
+              style={styles.seeAllNearbyButton}
+              onPress={() => router.push("/nearby")}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.seeAllNearbyText}>{t.seeAllNearby}</Text>
+              <Ionicons name="arrow-forward" size={16} color={Colors.onPrimary} />
+            </TouchableOpacity>
+          </View>
         )}
 
         {randomSpot && <RandomSpotCard spot={randomSpot} />}
@@ -243,6 +253,24 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  nearbySection: {
+    marginBottom: 16,
+  },
+  seeAllNearbyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: Colors.primary,
+    marginHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: BorderRadius.button,
+  },
+  seeAllNearbyText: {
+    ...Typography.industrialLabel,
+    fontSize: 12,
+    color: Colors.onPrimary,
   },
   logo: {
     width: 200,

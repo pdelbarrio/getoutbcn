@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ScrollView, View, Text, StyleSheet, Alert } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Alert, Linking } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { spotsService } from "../../services/supabase/spots";
 import { favoritesService } from "../../services/supabase/favorites";
 import { useAuth } from "../../contexts/AuthContext";
@@ -12,9 +13,10 @@ import CategoryTag from "../../components/CategoryTag";
 import DistrictButton from "../../components/DistrictButton";
 import TagButton from "../../components/TagButton";
 import MapViewWrapper from "../../components/MapViewWrapper";
+import AnimatedButton from "../../components/AnimatedButton";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
-import { Colors, Typography, Spacing } from "../../constants/Theme";
+import { Colors, Typography, Spacing, BorderRadius } from "../../constants/Theme";
 import { t } from "../../constants/Translations";
 
 export default function SpotDetailScreen() {
@@ -54,6 +56,29 @@ export default function SpotDetailScreen() {
     }
   }
 
+  async function openDirections() {
+    if (!spot) return;
+
+    if (!spot.latitude || !spot.longitude) {
+      Alert.alert(t.error, t.errorInvalidCoordinates);
+      return;
+    }
+
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}&travelmode=walking`;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert(t.error, t.errorOpenMaps);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error("Error opening maps:", error);
+      Alert.alert(t.error, t.errorOpenMaps);
+    }
+  }
+
   async function toggleFavorite() {
     if (!user) return;
 
@@ -87,6 +112,9 @@ export default function SpotDetailScreen() {
         imageUrl={spot.image_url}
         spotName={spot.name}
         spotId={spot.id}
+        description={spot.description}
+        latitude={spot.latitude}
+        longitude={spot.longitude}
         isFavorite={isFavorite}
         onToggleFavorite={toggleFavorite}
         showFavorite={!!user}
@@ -122,6 +150,13 @@ export default function SpotDetailScreen() {
           <Text style={styles.addressText}>{spot.address}</Text>
         </View>
       )}
+
+      <View style={styles.directionsContainer}>
+        <AnimatedButton style={styles.directionsButton} onPress={openDirections}>
+          <Ionicons name="navigate-outline" size={18} color={Colors.onPrimary} />
+          <Text style={styles.directionsText}>{t.howToGetThere}</Text>
+        </AnimatedButton>
+      </View>
 
       <MapViewWrapper
         latitude={spot.latitude}
@@ -167,5 +202,23 @@ const styles = StyleSheet.create({
   addressText: {
     ...Typography.industrialLabel,
     color: Colors.textSecondary,
+  },
+  directionsContainer: {
+    paddingHorizontal: Spacing.horizontalPadding,
+    marginTop: 12,
+  },
+  directionsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: Colors.primary,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.button,
+  },
+  directionsText: {
+    ...Typography.industrialLabel,
+    fontSize: 14,
+    color: Colors.onPrimary,
   },
 });

@@ -80,6 +80,20 @@ export const spotsService = {
     return { spot, distance };
   },
 
+  async getNearby(
+    lat: number,
+    lon: number,
+    limit = 50,
+  ): Promise<Spot[]> {
+    const { data, error } = await supabase.rpc("get_nearby_spots", {
+      user_lat: lat,
+      user_lon: lon,
+      max_results: limit,
+    });
+    if (error) throw error;
+    return (data || []) as unknown as Spot[];
+  },
+
   async create(
     spot: Omit<Spot, "id" | "created_at" | "created_by">,
   ): Promise<Spot> {

@@ -9,6 +9,9 @@ type SpotDetailHeaderProps = {
   imageUrl: string;
   spotName: string;
   spotId: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   showFavorite: boolean;
@@ -18,6 +21,9 @@ export default function SpotDetailHeader({
   imageUrl,
   spotName,
   spotId,
+  description,
+  latitude,
+  longitude,
   isFavorite,
   onToggleFavorite,
   showFavorite,
@@ -27,11 +33,26 @@ export default function SpotDetailHeader({
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: `${t.shareSpot}: ${spotName}`,
-      });
+      const hasCoords =
+        typeof latitude === "number" &&
+        typeof longitude === "number" &&
+        latitude !== 0 &&
+        longitude !== 0;
+
+      const lines = [spotName];
+      if (description) {
+        const shortDescription = description.split("\n")[0].slice(0, 120);
+        if (shortDescription) lines.push(shortDescription);
+      }
+      if (hasCoords) {
+        lines.push(
+          `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+        );
+      }
+
+      await Share.share({ message: lines.join("\n\n") });
     } catch (error) {
-      console.error('Error sharing:', error);
+      console.error("Error sharing:", error);
     }
   };
 
