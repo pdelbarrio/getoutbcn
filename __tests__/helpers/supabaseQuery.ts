@@ -12,6 +12,7 @@ const METHODS = [
   "update",
   "delete",
   "eq",
+  "neq",
   "or",
   "contains",
   "order",

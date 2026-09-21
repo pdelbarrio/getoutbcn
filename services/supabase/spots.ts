@@ -6,6 +6,7 @@ const SPOT_LIST_FIELDS =
   "id, name, image_url, category, district, latitude, longitude";
 const SPOT_DETAIL_FIELDS =
   "id, name, description, image_url, website, category, district, latitude, longitude, tags, address";
+const MAP_SPOT_FIELDS = "id, name, category, latitude, longitude";
 
 export const spotsService = {
   async getById(id: string): Promise<Spot | null> {
@@ -80,6 +81,17 @@ export const spotsService = {
       .range(from, to);
     if (error) throw error;
     return { data: (data || []) as unknown as Spot[], count };
+  },
+
+  async getAllForMap(): Promise<Spot[]> {
+    const { data, error } = await supabase
+      .from("spots")
+      .select(MAP_SPOT_FIELDS)
+      .neq("district", "No district");
+    if (error) throw error;
+    return ((data || []) as unknown as Spot[]).filter(
+      (spot) => spot.latitude !== 0 && spot.longitude !== 0,
+    );
   },
 
   async getRandom(): Promise<Spot | null> {

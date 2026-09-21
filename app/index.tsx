@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Stack } from "expo-router";
@@ -100,6 +101,42 @@ export default function HomeScreen() {
     }
   }
 
+  async function handleOpenMap() {
+    let params: { latitude?: string; longitude?: string } = {};
+
+    if (userLocation) {
+      params = {
+        latitude: String(userLocation.latitude),
+        longitude: String(userLocation.longitude),
+      };
+    } else {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status !== "granted") {
+          Alert.alert(t.mapPermissionTitle, t.mapPermissionMessage);
+        } else {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          const coords = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
+          setUserLocation(coords);
+          params = {
+            latitude: String(coords.latitude),
+            longitude: String(coords.longitude),
+          };
+        }
+      } catch (error) {
+        console.error("Error getting user location for map:", error);
+      }
+    }
+
+    router.push({ pathname: "/map", params });
+  }
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -115,6 +152,15 @@ export default function HomeScreen() {
           />
 
           <View style={styles.authButtons}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleOpenMap}
+              activeOpacity={0.7}
+              accessibilityLabel={t.openMap}
+            >
+              <Ionicons name="map-outline" size={20} color={Colors.primary} />
+            </TouchableOpacity>
+
             {!user ? (
               <TouchableOpacity
                 style={styles.loginButton}
@@ -216,6 +262,7 @@ const styles = StyleSheet.create({
   authButtons: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
   },
   loginButton: {
     backgroundColor: Colors.primary,

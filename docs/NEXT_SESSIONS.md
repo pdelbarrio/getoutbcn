@@ -56,6 +56,20 @@ Bibliografía: docs Expo AuthSession v54 → https://docs.expo.dev/versions/v54.
   - `CategoryRow` / `DistrictRow` (render y selección).
   - Validaciones de `spotsService`.
 
+## 4. Mapa general (HECHO)
+
+Implementado en `app/map.tsx`:
+
+- Carga completa en una sola query (`spotsService.getAllForMap`) con exclusión de `No district` y coordenadas `0,0`. Suficiente para ~100-200 spots.
+- Iconos por categoría con Ionicons (`constants/CategoryIcons.ts`); ojo: Ionicons NO tiene `mountain`, se usó `binoculars` para "Views".
+- Acceso desde el header de Home (`map-outline`); si se deniega el permiso de ubicación se avisa y el mapa se centra en Barcelona.
+- Callout por defecto (nombre + categoría) con `onCalloutPress` → `/spot/[id]`.
+
+### Futuro (si la BD crece > ~1000 spots)
+
+- **Bounding box:** consultar solo los spots dentro de la región visible (`onRegionChangeComplete`) usando rangos `.gte/.lte` sobre lat/lon o una RPC que aproveche el índice GIST `idx_spots_location`.
+- **Clustering** de markers si se superan unos cientos de puntos simultáneos.
+
 ## Notas
 
 - Windows: SDK 54 obligatorio en este proyecto (SDK 57 + AJV v8 falla en Windows; ver `REBUILD_PLAN.md`).

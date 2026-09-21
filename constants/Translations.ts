@@ -124,6 +124,13 @@ export const t = {
   selectLocationOnMap: 'SELECCIONA UBICACIÓ',
   tapMapToSelect: 'Toca en el mapa per triar les coordenades',
   selectedLocation: 'Ubicació seleccionada',
+  mapTitle: 'MAPA GENERAL',
+  openMap: 'Obrir el mapa general',
+  loadingMap: 'Carregant el mapa...',
+  mapPermissionTitle: 'Permís de ubicació',
+  mapPermissionMessage:
+    'Per centrar el mapa a la teva ubicació has de permetre l\'accés. Pots veure tots els llocs igualment.',
+  errorLoadingSpots: 'No s\'han pogut carregar els llocs',
 
   // Permissions
   permissionDenied: 'Permís denegat',

@@ -16,6 +16,7 @@ login.tsx → Login Screen
 add-spot.tsx → AddSpot Screen
 favorites.tsx → Favorites Screen
 profile.tsx → Profile Screen
+map.tsx → MapScreen
 
 /category
 [category].tsx → CategoryList Screen
@@ -79,6 +80,14 @@ profile.tsx → Profile Screen
 **Trigger:** User taps header button while authenticated  
 **Route:**  
 `/add-spot`
+
+---
+
+## 2.7 Home → MapScreen
+
+**Trigger:** User taps the map icon in the header  
+**Route:**  
+`/map` (optionally with `latitude` / `longitude` params when location permission is granted)
 
 ---
 
@@ -231,5 +240,23 @@ Examples:
 **Trigger:** User completes registration successfully  
 **Route:**  
 `/`
+
+---
+
+# 14. MapScreen Navigation
+
+## 14.1 MapScreen → SpotDetail
+
+**Trigger:** User taps a marker (callout)  
+**Route:**  
+`/spot/[id]`
+
+---
+
+## 14.2 MapScreen → Back
+
+**Trigger:** User taps the back button  
+**Route:**  
+Previous screen
 
 ---

@@ -22,34 +22,3 @@ export type Profile = {
   role?: "user" | "admin";
   created_at: string;
 };
-
-export type Favorite = {
-  id: string;
-  user_id: string;
-  spot_id: string;
-  created_at: string;
-};
-
-export type Category =
-  | "Live Music"
-  | "Food"
-  | "Shops"
-  | "Stand Up"
-  | "Cinema"
-  | "Views"
-  | "Silence"
-  | "Weird"
-  | "Bars";
-
-export type District =
-  | "Ciutat Vella"
-  | "Eixample"
-  | "Sants-Montjuïc"
-  | "Les Corts"
-  | "Sarrià-Sant Gervasi"
-  | "Gràcia"
-  | "Horta-Guinardó"
-  | "Nou Barris"
-  | "Sant Andreu"
-  | "Sant Martí"
-  | "No district";

@@ -4,13 +4,6 @@ import { setSupabaseMock, ok, fail } from "../helpers/supabaseQuery";
 
 jest.mock("../../services/supabase/client");
 
-const favorite = {
-  id: "fav-1",
-  user_id: "user-1",
-  spot_id: "spot-1",
-  created_at: "2026-01-01T00:00:00Z",
-};
-
 const listSpot = (id: string) => ({
   id,
   name: `Spot ${id}`,

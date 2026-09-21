@@ -54,6 +54,33 @@ Main landing screen where users can:
 - Tap header button:
   - If logged out → Login
   - If logged in → AddSpot
+- Tap map icon → MapScreen (requests location permission; on denial shows a message and opens the map centered on Barcelona)
+
+---
+
+## MapScreen (`app/map.tsx`)
+
+### Purpose
+
+Display all spots (except `No district` ones) on a full-screen map, each with an icon based on its category.
+
+### Components
+
+- Full-screen `MapView` (Google provider, dark custom style)
+- Custom `Marker` per spot (Ionicons icon per category, via `CATEGORY_ICONS`)
+- Header overlay (back button + title + spots count)
+- Loading chip / `ErrorMessage`
+
+### Data
+
+- All map spots (`spotsService.getAllForMap`: `id, name, category, latitude, longitude`; excludes `No district` and coordinates `0,0`)
+- Initial region: user location (if permission granted) or Barcelona fallback
+
+### User Actions
+
+- Tap marker → callout with spot name + category
+- Tap callout → SpotDetail
+- Tap back → previous screen
 
 ---
 

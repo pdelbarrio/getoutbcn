@@ -137,6 +137,32 @@ describe("spotsService.getByCategoryAndDistrict", () => {
   });
 });
 
+describe("spotsService.getAllForMap", () => {
+  it("returns map spots and filters out spots without valid coordinates", async () => {
+    const validMapSpot = {
+      id: "spot-1",
+      name: "El Pona",
+      category: "Bars",
+      latitude: 41.3869,
+      longitude: 2.1521,
+    };
+    const noCoords = { ...validMapSpot, id: "spot-2", latitude: 0, longitude: 0 };
+    const builder = setSupabaseMock(ok([validMapSpot, noCoords]));
+    const result = await spotsService.getAllForMap();
+    expect(result).toEqual([validMapSpot]);
+    expect(supabase.from).toHaveBeenCalledWith("spots");
+    expect(builder.select).toHaveBeenCalledWith(
+      "id, name, category, latitude, longitude",
+    );
+    expect(builder.neq).toHaveBeenCalledWith("district", "No district");
+  });
+
+  it("throws when supabase returns an error", async () => {
+    setSupabaseMock(fail("boom"));
+    await expect(spotsService.getAllForMap()).rejects.toThrow("boom");
+  });
+});
+
 describe("spotsService.getRandom", () => {
   it("returns a random spot", async () => {
     setSupabaseMock(ok(listSpot));
