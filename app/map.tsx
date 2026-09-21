@@ -51,6 +51,11 @@ const DARK_MAP_STYLE: MapStyleElement[] = [
     stylers: [{ color: "#6B7355" }],
   },
   {
+    featureType: "poi",
+    elementType: "all",
+    stylers: [{ visibility: "off" }],
+  },
+  {
     featureType: "road",
     elementType: "geometry",
     stylers: [{ color: "#2A2A2A" }],
@@ -106,6 +111,22 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const spotsRegion = useMemo(() => {
+    if (spots.length === 0) return null;
+
+    const latMin = Math.min(...spots.map((s) => s.latitude));
+    const latMax = Math.max(...spots.map((s) => s.latitude));
+    const lonMin = Math.min(...spots.map((s) => s.longitude));
+    const lonMax = Math.max(...spots.map((s) => s.longitude));
+
+    return {
+      latitude: (latMin + latMax) / 2,
+      longitude: (lonMin + lonMax) / 2,
+      latitudeDelta: Math.max(latMax - latMin, 0.05) * 1.3,
+      longitudeDelta: Math.max(lonMax - lonMin, 0.05) * 1.3,
+    };
+  }, [spots]);
+
   useEffect(() => {
     loadSpots();
   }, []);
@@ -134,7 +155,7 @@ export default function MapScreen() {
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.map}
-            initialRegion={userRegion || BARCELONA_REGION}
+            initialRegion={spotsRegion || BARCELONA_REGION}
             customMapStyle={DARK_MAP_STYLE}
             showsUserLocation={!!userRegion}
             showsMyLocationButton={false}

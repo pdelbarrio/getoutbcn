@@ -152,15 +152,6 @@ export default function HomeScreen() {
           />
 
           <View style={styles.authButtons}>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={handleOpenMap}
-              activeOpacity={0.7}
-              accessibilityLabel={t.openMap}
-            >
-              <Ionicons name="map-outline" size={20} color={Colors.primary} />
-            </TouchableOpacity>
-
             {!user ? (
               <TouchableOpacity
                 style={styles.loginButton}
@@ -234,6 +225,15 @@ export default function HomeScreen() {
 
         {randomSpot && <RandomSpotCard spot={randomSpot} />}
       </ScrollView>
+
+      <TouchableOpacity
+        style={[styles.fab, { bottom: insets.bottom + 20 }]}
+        onPress={handleOpenMap}
+        activeOpacity={0.7}
+        accessibilityLabel={t.openMap}
+      >
+        <Ionicons name="map" size={28} color={Colors.onPrimary} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -323,5 +323,20 @@ const styles = StyleSheet.create({
     width: 200,
     height: 70,
     resizeMode: "contain",
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
   },
 });
