@@ -15,6 +15,7 @@ export const t = {
   delete: 'eliminar',
   edit: 'editar',
   share: 'compartir',
+  success: 'Fet',
 
   // Home Screen
   search: 'CERCAR',
@@ -171,7 +172,12 @@ export const t = {
   // Profile
   profileTitle: 'PERFIL',
   emailLabel: 'EMAIL',
-  userIdLabel: 'ID D\'USUARI',
+  yourNickname: 'EL TEU SOBRENOM',
+  nicknamePlaceholder: 'Escriu el teu sobrenom',
+  nicknameAnonymous: 'Anònim',
+  nicknameInvalidChars: 'El sobrenom només pot contenir lletres, números, guions (-) i guions baixos (_)',
+  nicknameTooLong: 'El sobrenom no pot superar els 20 caràcters',
+  nicknameSaved: 'Sobrenom desat correctament',
 
   // No district
   noDistrict: 'Sense districte',
