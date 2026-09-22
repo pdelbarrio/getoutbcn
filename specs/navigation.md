@@ -17,6 +17,7 @@ add-spot.tsx → AddSpot Screen
 favorites.tsx → Favorites Screen
 profile.tsx → Profile Screen
 map.tsx → MapScreen
+nearby.tsx → Nearby Screen
 
 /category
 [category].tsx → CategoryList Screen
@@ -85,7 +86,7 @@ map.tsx → MapScreen
 
 ## 2.7 Home → MapScreen
 
-**Trigger:** User taps the map icon in the header  
+**Trigger:** User taps the map FAB (Floating Action Button, bottom-right)  
 **Route:**  
 `/map` (optionally with `latitude` / `longitude` params when location permission is granted)
 
@@ -223,13 +224,27 @@ Admins can access:
 
 ---
 
-# 12. Deep Linking (Optional Future Feature)
+## 12. Deep Linking
+
+### App deep links (optional future feature)
 
 Examples:
 
 - `getoutbcn://spot/123`
 - `getoutbcn://category/Food`
 - `getoutbcn://district/Gràcia`
+
+### External deep links (Google Maps) — used today
+
+**"Com arribar-hi" (directions from current location):**
+
+- Route: `https://www.google.com/maps/dir/?api=1&destination=<lat>,<lon>&travelmode=walking`
+- Opened with `Linking.openURL` from SpotDetail (`openDirections`).
+
+**Share (spot link):**
+
+- Route: `https://www.google.com/maps/search/?api=1&query=<lat>,<lon>`
+- Included in the share message of `SpotDetailHeader` when the spot has coordinates.
 
 ---
 
@@ -258,5 +273,21 @@ Examples:
 **Trigger:** User taps the back button  
 **Route:**  
 Previous screen
+
+---
+
+# 15. Nearby Navigation
+
+## 15.1 Nearby → SpotDetail
+
+**Trigger:** User taps a SpotCard on the nearby list  
+**Route:**  
+`/spot/[id]`
+
+## 15.2 Nearby → Back
+
+**Trigger:** User taps the back button  
+**Route:**  
+Previous screen (typically Home)
 
 ---

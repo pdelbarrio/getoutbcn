@@ -254,3 +254,43 @@ All interactive elements must meet minimum touch size.
 - “No district” badge styling:
   - Background: `#E0E0E0`
   - Text: `#616161`
+
+---
+
+## 11. Map (General) UI
+
+### 11.1 Dark Style (`DARK_MAP_STYLE`)
+
+`app/map.tsx` applies a custom dark map style aligned with the theme:
+
+- Geometry: `#1C1B1B`, roads `#2A2A2A`, water `#101508`
+- Labels: `#8B947A` (fill) / `#131313` (stroke)
+- **POIs genéricos ocultados:** rule `{ featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] }`
+
+### 11.2 Custom Markers
+
+- Each flat marker is a `View` (36px circle) with an Ionicons icon per category (`CategoryIcons.ts`), background `primary` `#A9F900`, border `onPrimary`.
+- **Android caveat:** when combining `customMapStyle` with custom marker children, use `tracksViewChanges={false}` on the `Marker` to avoid rendering/perf bugs (flickering or blank pins).
+
+---
+
+## 12. Floating Action Button (FAB)
+
+Used on the Home screen to open the general map.
+
+- Position: absolute, bottom-right (`right: 20`, `bottom: insets.bottom + 20`)
+- Size: **60 × 60px** circle (`borderRadius: 30`)
+- Background: `primary` (`#A9F900`); icon `map`, size 28, color `onPrimary`
+- Elevation + shadow for floating effect
+- Does not interfere with the screen's scroll (rendered outside the ScrollView)
+
+---
+
+## 13. Anonymous Comment Switch
+
+Component: `CommentsSection` composer.
+
+- A `Switch` toggle with the label "Comentar com a anònim".
+- Track color `primary` when ON / `surfaceHighest` when OFF; thumb `onPrimary` when ON.
+- Below it, a helper caption: "Comentes com a: **<nick>**" (the nick from `profile.username`, `primary` and bold) or "Anònim" when the switch is ON.
+- When ON, the comment is saved with `is_anonymous = true` and the RPC returns `username = NULL`.

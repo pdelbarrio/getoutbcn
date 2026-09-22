@@ -72,5 +72,5 @@ Implementado en `app/map.tsx`:
 
 ## Notas
 
-- Windows: SDK 54 obligatorio en este proyecto (SDK 57 + AJV v8 falla en Windows; ver `REBUILD_PLAN.md`).
+- Windows: SDK 54 obligatorio en este proyecto (SDK 57 + AJV v8 falla en Windows; ver `HISTORY.md`).
 - Sin lint configurado; verificación con `npx tsc --noEmit`.

@@ -54,7 +54,7 @@ Main landing screen where users can:
 - Tap header button:
   - If logged out → Login
   - If logged in → AddSpot
-- Tap map icon → MapScreen (requests location permission; on denial shows a message and opens the map centered on Barcelona)
+- Tap the Floating Action Button (FAB, bottom-right, map icon) → MapScreen (requests location permission; on denial shows a message and opens the map centered on Barcelona)
 
 ---
 
@@ -66,21 +66,25 @@ Display all spots (except `No district` ones) on a full-screen map, each with an
 
 ### Components
 
-- Full-screen `MapView` (Google provider, dark custom style)
-- Custom `Marker` per spot (Ionicons icon per category, via `CATEGORY_ICONS`)
+- Full-screen `MapView` (Google provider, dark custom style with POIs hidden)
+- Custom `Marker` per spot (Ionicons icon per category, via `CategoryIcons.ts`)
 - Header overlay (back button + title + spots count)
 - Loading chip / `ErrorMessage`
 
 ### Data
 
 - All map spots (`spotsService.getAllForMap`: `id, name, category, latitude, longitude`; excludes `No district` and coordinates `0,0`)
-- Initial region: user location (if permission granted) or Barcelona fallback
+- Initial region computed **dynamically from the loaded spots** (min/max lat/lon → `latitudeDelta` / `longitudeDelta`); falling back to `BARCELONA_REGION` if there are no spots.
 
 ### User Actions
 
 - Tap marker → callout with spot name + category
 - Tap callout → SpotDetail
 - Tap back → previous screen
+
+### Access
+
+- FAB (Floating Action Button) in the bottom-right corner of the Home screen.
 
 ---
 
@@ -159,24 +163,51 @@ Display full details of a spot.
 
 ### Components
 
-- ImageHeader
+- ImageHeader (`SpotDetailHeader` in the current codebase)
 - SpotInfo (name, description, website)
 - CategoryTag
 - DistrictButton
 - MapViewWrapper
 - FavoriteButton
+- CommentsSection (at the end of the page)
 
 ### Data
 
 - `id` (route param)
 - Spot data (Supabase)
 - Favorite status (Supabase)
+- Comments for the spot (Supabase, via `commentsService.getBySpotId`)
 
 ### User Actions
 
 - Tap district → DistrictList
 - Add/remove favorite
 - Open external website link
+- Comment: create / edit / delete (own comments), optionally as anonymous
+
+---
+
+## Nearby Screen (`app/nearby.tsx`)
+
+### Purpose
+
+Display the spots nearest to the user, ordered by distance.
+
+### Components
+
+- Header with back button
+- SpotCard (vertical, paginated list)
+- Loading / empty states
+
+### Data
+
+- User location (Expo Location)
+- Nearby spots via RPC `get_nearby_spots` (ordered by distance, cap 50)
+
+### User Actions
+
+- Tap spot → SpotDetail
+- "See all nearby" trigger from the Home screen (`NearbySpotCard`)
 
 ---
 
@@ -261,17 +292,29 @@ Display all spots saved as favorites by the user.
 
 ### Purpose
 
-Display user profile information.
+Display and edit the user's profile information.
 
 ### Components
 
-- Avatar
+- Avatar (optional, future)
 - Email
+- Nickname (`username`) editable: TextInput + "Guardar" button (max 20 chars; only letters, numbers, `-` and `_`; empty → "Anònim")
 - LogoutButton
+
+### Data
+
+- `user` (Supabase Auth)
+- `profile` (Supabase `profiles`, exposed via `useAuth().profile`)
+- `profilesService.updateUsername`
 
 ### User Actions
 
+- Edit and save nickname → calls `refreshProfile()` so the change propagates instantly across the app (e.g. comments)
 - Logout
+
+### Notes
+
+- The user ID (UUID) is **not** displayed.
 
 ---
 

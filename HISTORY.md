@@ -1,9 +1,11 @@
 Te he preparado la versión actualizada y definitiva de tu plan de reconstrucción. He revisado cada sección y corregido todas las referencias a versiones, comandos y dependencias para que estén alineadas con **Expo SDK 54**, que es la elección más estable y segura para tu entorno Windows.
 
-Puedes copiar y pegar este contenido en tu archivo `REBUILD_PLAN.md` para tenerlo completamente listo.
+Puedes copiar y pegar este contenido en tu archivo `HISTORY.md` para tenerlo completamente listo.
 
 ````markdown
-# 🎯 GetOutBCN - Rebuild Plan con Expo SDK 54 + SDD
+# GetOutBCN — Historial del Proyecto
+
+> Documento histórico. Para el estado actual, consultar `PROJECT.md`.
 
 **Fecha de creación:** 5 de Agosto, 2026
 **Objetivo:** Crear proyecto limpio desde cero con stack compatible Windows, sin dependencias rotas y con soporte activo.
@@ -132,7 +134,7 @@ GetOutBCN-v2/
 ├── app.json                      # Expo config
 ├── metro.config.js               # Metro bundler config
 ├── tsconfig.json                 # TypeScript config
-└── REBUILD_PLAN.md              # Este archivo
+└── HISTORY.md                # Este archivo
 ```
 
 ---
@@ -1790,7 +1792,7 @@ Verificar que Row Level Security esté configurada correctamente
 Cuando estés listo para empezar:
 
 1. **Abrir OpenCode** en el proyecto
-2. **Decir:** "Empecemos con Sprint 1 del REBUILD_PLAN.md"
+2. **Decir:** "Empecemos con Sprint 1 del HISTORY.md"
 3. **Seguir sprints** uno por uno
 4. **Probar cada fase** antes de continuar
 
@@ -1812,5 +1814,37 @@ Si encuentras problemas:
 **Estado:** ✅ Listo para ejecutar
 
 ```
+
+---
+
+## Post-Rebuild: Funcionalidades añadidas
+
+Funcionalidades implementadas después de completar el plan de reconstrucción (ver `PROJECT.md` para el estado actual):
+
+- **Lazy loading / paginación:** hook reutilizable `usePaginatedSpots` con `PAGE_SIZE = 15`, `count: "exact"`, `onEndReached` y pull-to-refresh en los listados; RPC `get_nearby_spots` para el listado "A prop".
+- **Mapa general (`app/map.tsx`):** pantalla a pantalla completa con todos los spots, marcadores con icono por categoría (`constants/CategoryIcons.ts`), estilo oscuro (`DARK_MAP_STYLE`), ocultación de POIs genéricos, callout → detalle y acceso desde un FAB en Home.
+- **Comentarios:** crear / editar / borrar comentarios (límite 200 caracteres) y modo anónimo (`is_anonymous`). Componente `CommentsSection`, servicio `commentsService`, RPC `get_comments_for_spot` y triggers `set_comments_user_id` / `update_comments_updated_at`.
+- **Edición de nick desde perfil:** `username` editable en `app/profile.tsx` (máx. 20 chars, solo letras/números/guiones; vacío → "Anònim"), con `profilesService.updateUsername` y `refreshProfile()` en `AuthContext`.
+- **RLS activado** en `profiles`, `spots`, `favorites` y `comments`, con políticas granulares (incluido el rol `admin`).
+- **Trigger `handle_new_user`:** crea la fila en `profiles` al registrar un usuario (email o Google).
+- **GitHub Actions (`build-android.yml`):** build Android (prebuild + APK release) con disparo manual (`workflow_dispatch`).
+
+---
+
+## Anexo 3: Errores de RLS y GRANT
+
+**Problema:** `permission denied for table comments`
+
+**Síntoma:** Aunque las políticas RLS estaban bien, cualquier operación sobre `comments` fallaba con `permission denied`.
+
+**Causa:** Las tablas creadas con `CREATE TABLE` desde el SQL Editor de Supabase no reciben GRANT por defecto para `anon` y `authenticated`. El Table Editor sí los añade automáticamente.
+
+**Solución:**
+
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.comments TO anon, authenticated;
+```
+
+**Lección:** RLS y GRANT son sistemas complementarios, no sustitutivos.
 
 ```

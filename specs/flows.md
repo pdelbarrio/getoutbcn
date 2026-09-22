@@ -166,6 +166,71 @@ This document defines all user interaction flows in the GetOutBCN mobile applica
 
 ---
 
+## 5.5 Create Comment
+
+**Trigger:** Authenticated user publishes a comment in `CommentsSection`  
+**Steps:**
+
+1. Write text (max **200 characters**).
+2. Optionally toggle the "Comentar com a anònim" switch → `isAnonymous = true`.
+3. Tap "Enviar".
+4. `commentsService.create(spotId, content, isAnonymous)` inserts into `comments` (the DB assigns `user_id` via the trigger `set_comments_user_id`, and sets `is_anonymous`).
+5. On success the composer clears, `isAnonymous` resets to `false`, and the list reloads.
+
+**Constraints:**
+
+- Requires authentication (the composer is hidden for logged-out users).
+- Content must be non-empty and ≤ 200 chars.
+- Counter `n/200` is shown next to the input.
+
+---
+
+## 5.6 Edit / Delete Comment (own comments only)
+
+**Trigger:** User is the author of a comment (`user.id === comment.user_id`)  
+**Edit — Steps:**
+
+1. Tap the pencil icon → inline `TextInput` prefilled with the content.
+2. Edit and tap "desar"; `commentsService.update(commentId, content)` updates and the list reloads.
+
+**Delete — Steps:**
+
+1. Tap the trash icon → `Alert` confirmation.
+2. On confirm, `commentsService.remove(commentId)` deletes and the list updates locally.
+
+**Constraints:**
+
+- Only the author can edit/delete (RLS).
+- Deleting requires explicit confirmation.
+
+---
+
+## 5.7 "Com arribar-hi" (Directions)
+
+**Trigger:** User taps the "Com arribar-hi" button on SpotDetail  
+**Steps:**
+
+1. Build the Google Maps directions URL:
+   `https://www.google.com/maps/dir/?api=1&destination=<lat>,<lon>&travelmode=walking`
+2. Check support with `Linking.canOpenURL`.
+3. Open it with `Linking.openURL`.
+4. On error (or no coordinates) show an `Alert`.
+
+---
+
+## 5.8 Share Spot
+
+**Trigger:** User taps the share icon on `SpotDetailHeader`  
+**Steps:**
+
+1. Compose the message:
+   - Spot name
+   - First line of the description (truncated to 120 chars), if present
+   - Google Maps link (`https://www.google.com/maps/search/?api=1&query=<lat>,<lon>`), only if the spot has valid coordinates
+2. Open the native share sheet (`Share.share`).
+
+---
+
 # 6. Login Flow
 
 ## 6.1 Google Login
@@ -328,6 +393,25 @@ Admins can later edit/delete any spot.
 
 ---
 
+## 9.3 Edit Nickname
+
+**Trigger:** User edits the `username` field on the Profile screen  
+**Steps:**
+
+1. Type the new nickname (auto-capitalization off, counter `n/20` shown).
+2. Tap "Guardar".
+3. Validation:
+   - Length > 20 → `Alert` error (nicknameTooLong).
+   - Contains invalid characters (only `a-z`, `A-Z`, `0-9`, `-`, `_` allowed; no spaces) → `Alert` error (nicknameInvalidChars).
+   - Empty text → saved literally as `"Anònim"`.
+4. On success: `profilesService.updateUsername(user.id, value)` → `refreshProfile()` → confirmation `Alert`.
+
+**Notes:**
+
+- The change is global and immediate: `AuthContext` stores the updated `profile`, so every screen using `useAuth()` (e.g. comments showing the author name) reflects it without logging out.
+
+---
+
 # 10. Admin Flow
 
 ## 10.1 Edit Any Spot
@@ -342,5 +426,25 @@ Admins can later edit/delete any spot.
 
 **Note:**  
 Admins bypass RLS restrictions.
+
+---
+
+# 11. Lazy Loading / Pagination in Listings
+
+Applied to the listing screens (category, district, search, tag, favorites).
+
+**Trigger:** Navigate to a listing screen  
+**Steps:**
+
+1. Initial fetch of the first page: `PAGE_SIZE = 15`, `count: "exact"` (total number of spots).
+2. Render the loaded `SpotCard`s; while more pages remain, show a loading footer.
+3. Scroll to the bottom → `onEndReached` triggers the fetch of the next page (incremental `from`/`to` range) and appends the new items.
+4. Pull-to-refresh reloads the first page and resets the pagination state.
+5. When there are no results, an empty state is shown.
+
+**Related:**
+
+- Hook: `hooks/usePaginatedSpots.ts`.
+- Nearby listing uses the RPC `get_nearby_spots` (ordered by distance, cap 50).
 
 ---

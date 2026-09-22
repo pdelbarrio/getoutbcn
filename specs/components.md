@@ -183,6 +183,38 @@ Display the main image at the top of SpotDetail.
 
 ---
 
+## SpotDetailHeader
+
+### Purpose
+
+Header of the spot detail screen (current implementation).
+
+### Responsibilities
+
+- Full-width spot image (300px) with dark overlay
+- Back navigation
+- Share button (native share sheet)
+- Favorite (bookmark) toggle — only if authenticated; otherwise prompts login
+- Tap on image → full-image modal
+
+### Props
+
+- `imageUrl: string`
+- `spotName: string`
+- `spotId: string`
+- `description?: string`
+- `latitude?: number`
+- `longitude?: number`
+- `isFavorite: boolean`
+- `onToggleFavorite: () => void`
+- `showFavorite: boolean`
+
+### Share logic
+
+Message composed from: spot name + first line of description (≤ 120 chars) + Google Maps link (`https://www.google.com/maps/search/?api=1&query=<lat>,<lon>`) only when coordinates are valid.
+
+---
+
 ## SpotInfo
 
 ### Purpose
@@ -262,6 +294,22 @@ Display a map centered on the spot location.
 
 ---
 
+## CategoryIcons
+
+### Purpose
+
+Mapping between spot categories and Ionicons icon names (`constants/CategoryIcons.ts`).
+
+### Responsibilities
+
+- `getCategoryIcon(category)` → Ionicons name (used by the map markers and other category visuals)
+
+### Notes
+
+- Used in `app/map.tsx` markers and in the spot detail category visuals.
+
+---
+
 ## FavoriteButton
 
 ### Purpose
@@ -282,6 +330,33 @@ Allow users to add/remove a spot from favorites.
 ### Interactions
 
 - Tap → add/remove favorite in Supabase
+
+---
+
+## CommentsSection
+
+### Purpose
+
+Comment section rendered at the end of `app/spot/[id].tsx`.
+
+### Responsibilities
+
+- Load comments for a spot (`commentsService.getBySpotId(spotId)`)
+- Show header "Comentaris (X)"
+- If authenticated: `TextInput` (max 200 chars) with counter, anonymous toggle and "Enviar" button
+- Show "Comentes com a: [nick]" (or "Anònim") depending on the anonymous switch; the nick comes from `useAuth().profile.username`
+- List comments: author `username` (or "Anònim") + relative date ("fa 2 hores") + content
+- For the author's own comments: inline edit (pencil) and delete (trash, with confirmation)
+- Empty state: "Sigues el primer en comentar"
+
+### Props
+
+- `spotId: string`
+
+### Data
+
+- `commentsService` (getBySpotId, create, update, remove)
+- `useAuth()` → `user`, `profile`
 
 ---
 

@@ -1,7 +1,7 @@
 # GetOutBCN — Documentación del Proyecto
 
-> Documento vivo. Consolida el estado actual del proyecto y su historial (fuentes: `REBUILD_PLAN.md` y `docs/NEXT_SESSIONS.md`).
-> Última actualización: 21 de septiembre de 2026.
+> Documento vivo. Consolida el estado actual del proyecto y su historial (fuentes: `HISTORY.md` y `docs/NEXT_SESSIONS.md`).
+> Última actualización: 22 de septiembre de 2026.
 
 ---
 
@@ -14,6 +14,7 @@ Estado clave:
 - **Stack estable en Windows:** Expo SDK 54 (LTS) + expo-router 6 + Supabase. SDK 56/57 provocan un fallo AJV v8 en Windows (ver § 4.2). Regla de oro: instalar siempre con `npx expo install`.
 - **Supabase:** auth, base de datos, storage (subida vía Edge Function `generate-upload-url`) y RPCs (`get_random_spot`, `get_nearest_spot`, `get_nearby_spots`, `toggle_favorite`) ya desplegadas.
 - **Paginación (lazy loading):** implementada en los listados (categoría, distrito, categoría+distrito, tag, favoritos) con `PAGE_SIZE = 15`, RPC `get_nearby_spots` para el "A prop", y hook reutilizable `usePaginatedSpots`.
+- **Comentarios y nick:** ya hay **comentarios con opción anónima** (switch "Comentar com a anònim") y **edición de nick desde el perfil** (`app/profile.tsx`), con reflejo inmediato en toda la app (p. ej. en los comentarios).
 - **Testing:** Jest + ts-jest configurado; **43 tests en verde y cobertura 100%** (statements/functions/lines) para `services/supabase/spots.ts` y `favorites.ts`.
 - **CI/CD:** workflow GitHub Actions `build-android.yml` (prebuild + APK release, disparo manual). `eas.json` con perfiles development / preview / production (APK).
 - **Pendiente urgente:** ampliar tests, verificar login Google en dev build, y preparar el lanzamiento en tienda (Play Store).
@@ -35,7 +36,7 @@ Estado clave:
 | Funcionalidad | Ruta / Módulo | Estado | Observaciones |
 |---|---|---|---|
 | Home (búsqueda, categorías, distritos) | `app/index.tsx` | ✅ Operativo | Carruseles animados `CategoryRow`/`DistrictRow`, `RandomSpotCard`, `NearbySpotCard` |
-| **Mapa general** | `app/map.tsx` | ✅ Operativo | Todos los spots (excluye `No district` y coords `0,0`) con marker/icono por categoría; callout → detalle; acceso desde el header de Home |
+| **Mapa general** | `app/map.tsx` | ✅ Operativo | Todos los spots (excluye `No district` y coords `0,0`) con marker/icono por categoría; callout → detalle; acceso desde un FAB en Home |
 | Listado por categoría | `app/category/[category].tsx` | ✅ Paginado | `PAGE_SIZE=15`, count `exact`, `onEndReached`, pull-to-refresh |
 | Listado por distrito | `app/district/[district].tsx` | ✅ Paginado | Ídem |
 | Búsqueda categoría × distrito | `app/search/[category]/[district].tsx` | ✅ Paginado | Key compuesta para reset automático |
@@ -58,6 +59,10 @@ Estado clave:
 | **Testing unitario** | `__tests__/supabase/` | ✅ Parcial | 43 tests, 100% en `spots.ts` y `favorites.ts`; resto sin cubrir |
 | CI Android | `.github/workflows/build-android.yml` | ✅ Operativo | `workflow_dispatch`, prebuild + gradle `assembleRelease` |
 | **Publicación en tienda** | `eas submit` | ❌ Pendiente | Preparación para Play Store pendiente (§ 1) |
+| **Comentarios en spots** | `components/CommentsSection.tsx` + `services/supabase/comments.ts` | ✅ Operativo | Crear/editar/borrar, límite 200 caracteres |
+| **Comentar como anónimo** | `CommentsSection.tsx` | ✅ Operativo | Switch en composer; RPC oculta username si `is_anonymous=true` |
+| **Edición de nick** | `app/profile.tsx` + `profilesService.updateUsername` | ✅ Operativo | Máx. 20 chars, solo letras/números/guiones; vacío → "Anònim" |
+| **RLS en profiles y spots** | Supabase | ✅ Operativo | Políticas SELECT/INSERT/UPDATE/DELETE; admin edita/borra cualquiera |
 
 ---
 
@@ -65,7 +70,7 @@ Estado clave:
 
 Fuente: `docs/NEXT_SESSIONS.md` § 2.
 
-- **RLS (Row Level Security):** verificar políticas de `spots` y demás tablas; documentarlas en README (sección SECURITY).
+- **RLS:** ✅ Implementado en `profiles`, `spots`, `favorites` y `comments`. Documentar políticas en README como pendiente.
 - **Sanitizar URLs:** `SpotInfo.tsx` llama `Linking.openURL(website)` directo. Validar esquema `http/https` antes de abrir para evitar esquemas maliciosos provenientes de la BD.
 - **Auditoría de dependencias:** `npm audit` (16 moderate / 12 high reportadas).
 - **Endurecer `supabase/functions/generate-upload-url/index.ts`:** actualmente solo valida el header `Authorization`; añadir verificación del JWT (rol/aud).
@@ -88,11 +93,12 @@ Fuente: `docs/NEXT_SESSIONS.md` § 2.
 
 **Fechas:** plan creado el 5 de agosto de 2026 (versión 2.0). Reconstrucción completa del proyecto (SDK 57 fallido → SDK 54).
 
-### 4.2 Lecciones aprendidas (de `REBUILD_PLAN.md`)
+### 4.2 Lecciones aprendidas (de `HISTORY.md`)
 
 1. **Expo SDK 57 + AJV v8 + Windows falla** (`Cannot find module 'ajv/dist/compile/codegen'`). Solución: usar SDK 54 en Windows; nunca mezclar paquetes de SDK 56/57. Si aparece el error AJV, es síntoma de SDK 56/57.
 2. **API key de Google Maps:** `expo-build-properties` NO inyecta la clave en el `AndroidManifest.xml`. Se resuelve con un **plugin personalizado** (`plugins/withGoogleMapsApiKey.js`) que añade el `<meta-data>`, leyendo `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` desde `app.config.js`. La carpeta `android/`/`ios/` está en `.gitignore`; nunca subirla.
 3. **Subida de imágenes en móvil:** el upload directo a Supabase Storage falla por CORS/auth. Solución: Edge Function `generate-upload-url` que devuelve una URL firmada de un solo uso; la app hace `PUT` y obtiene la URL pública. Secrets requeridos: `SB_URL` y `SERVICE_ROLE_KEY`.
+4. **GRANT vs RLS:** `CREATE TABLE` desde SQL Editor no añade GRANT (a diferencia del Table Editor). Si hay `permission denied`, ejecutar `GRANT SELECT, INSERT, UPDATE, DELETE ON <tabla> TO anon, authenticated;`.
 
 ### 4.3 Funcionalidades añadidas posteriormente al plan (sesiones recientes)
 
@@ -102,6 +108,10 @@ Fuente: `docs/NEXT_SESSIONS.md` § 2.
 - **Paginación / infinite scroll** en los listados (hook `usePaginatedSpots`, `PAGE_SIZE`, `count: "exact"`), con pull-to-refresh y estados de carga/vacío.
 - **Entorno de testing:** Jest + ts-jest, `jest.config.js`, `tsconfig.test.json`, mock manual de `client.ts`, 41 tests unitarios (cobertura 100% en servicios de spots y favoritos).
 - **Mapa general (`/map`):** pantalla a pantalla completa con todos los spots (excluye `No district` y coordenadas `0,0`), `Marker` custom con icono Ionicons por categoría (`constants/CategoryIcons.ts`), callout con nombre → detalle, estilo de mapa oscuro y acceso mediante icono `map-outline` en el header de Home. Si el usuario deniega el permiso de ubicación se muestra un aviso y el mapa se centra en Barcelona. Carga completa en una sola query (`spotsService.getAllForMap`); el bounding box queda descartado a esta escala.
+- **Comentarios:** tabla `comments` con RLS, RPC `get_comments_for_spot` (JOIN con `profiles`), trigger `set_comments_user_id`. Componente `CommentsSection` al final del detalle. Límite 200 chars.
+- **Nick y anónimo:** `username` editable en `app/profile.tsx`. Switch "Comentar com a anònim" → `is_anonymous=true`.
+- **RLS y GRANT:** activado en `profiles` y `spots` con políticas granulares (incluye admin). Documentado `permission denied for table comments` → GRANT explícito.
+- **Trigger `handle_new_user`:** crea fila en `profiles` al registrar usuario (email o Google).
 
 ### 4.4 Ideas futuras en cartera (`NEXT_SESSIONS.md` / próximos pasos opcionales)
 
@@ -116,7 +126,7 @@ Fuente: `docs/NEXT_SESSIONS.md` § 2.
 
 | Recurso | Propósito |
 |---|---|
-| `REBUILD_PLAN.md` | Historial completo de fases, comandos y lecciones aprendidas |
+| `HISTORY.md` | Historial completo de fases, comandos y lecciones aprendidas |
 | `docs/NEXT_SESSIONS.md` | Trabajo pendiente investigado y por decidir |
 | `specs/` (6 archivos) | SDD: data, screens, navigation, flows, components, ui |
 | `services/supabase/` | Capa de servicios (auth, spots, favorites, profiles, storage, social-auth) |
