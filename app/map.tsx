@@ -156,7 +156,7 @@ export default function MapScreen() {
             provider={PROVIDER_GOOGLE}
             style={styles.map}
             initialRegion={spotsRegion || BARCELONA_REGION}
-            customMapStyle={DARK_MAP_STYLE}
+            //customMapStyle={DARK_MAP_STYLE}
             showsUserLocation={!!userRegion}
             showsMyLocationButton={false}
             toolbarEnabled={false}
@@ -171,7 +171,6 @@ export default function MapScreen() {
                 title={spot.name}
                 description={CATEGORY_LABELS[spot.category] || spot.category}
                 onCalloutPress={() => router.push(`/spot/${spot.id}`)}
-                tracksViewChanges={false}
               >
                 <View style={styles.markerPin}>
                   <Ionicons
