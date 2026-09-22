@@ -46,7 +46,7 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [newContent, setNewContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -59,12 +59,12 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
 
   async function loadComments() {
     try {
-      setLoadError(false);
+      setLoadError(null);
       const data = await commentsService.getBySpotId(spotId);
       setComments(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading comments:", error);
-      setLoadError(true);
+      setLoadError(error?.message || JSON.stringify(error));
     } finally {
       setLoading(false);
     }
@@ -81,9 +81,9 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
       await commentsService.create(spotId, content);
       setNewContent("");
       await loadComments();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating comment:", error);
-      Alert.alert(t.error, t.errorCreatingComment);
+      Alert.alert("Error detallat", error?.message || JSON.stringify(error));
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +174,7 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
         </View>
       ) : loadError ? (
         <View style={styles.loadingContainer}>
-          <Text style={styles.emptyText}>{t.errorLoadingComments}</Text>
+          <Text style={styles.emptyText}>{loadError}</Text>
           <TouchableOpacity onPress={loadComments} activeOpacity={0.7}>
             <Text style={styles.retryText}>{t.retry}</Text>
           </TouchableOpacity>
