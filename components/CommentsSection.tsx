@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { commentsService } from "../services/supabase/comments";
@@ -43,11 +44,12 @@ interface CommentsSectionProps {
 }
 
 export default function CommentsSection({ spotId }: CommentsSectionProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [newContent, setNewContent] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
@@ -78,8 +80,9 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
 
     setSubmitting(true);
     try {
-      await commentsService.create(spotId, content);
+      await commentsService.create(spotId, content, isAnonymous);
       setNewContent("");
+      setIsAnonymous(false);
       await loadComments();
     } catch (error: any) {
       console.error("Error creating comment:", error);
@@ -149,6 +152,23 @@ export default function CommentsSection({ spotId }: CommentsSectionProps) {
             multiline
             maxLength={MAX_COMMENT_LENGTH}
           />
+          <View style={styles.composerRow}>
+            <Switch
+              value={isAnonymous}
+              onValueChange={setIsAnonymous}
+              trackColor={{ false: Colors.surfaceHighest, true: Colors.primary }}
+              thumbColor={isAnonymous ? Colors.onPrimary : Colors.textMuted}
+            />
+            <Text style={styles.anonymousLabel}>{t.commentAnonymousToggle}</Text>
+          </View>
+          <Text style={styles.commentsAsText}>
+            {t.commentsAs}{" "}
+            <Text style={styles.commentsAsNick}>
+              {isAnonymous || !profile?.username
+                ? t.commentAnonymous
+                : profile.username}
+            </Text>
+          </Text>
           <View style={styles.composerFooter}>
             <Text style={styles.counter}>
               {newContent.length}/{MAX_COMMENT_LENGTH}
@@ -316,6 +336,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 8,
+  },
+  composerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
+  },
+  anonymousLabel: {
+    ...Typography.industrialLabel,
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  commentsAsText: {
+    ...Typography.bodyMain,
+    fontSize: 12,
+    color: Colors.textMuted,
+    marginTop: 4,
+  },
+  commentsAsNick: {
+    color: Colors.primary,
+    fontWeight: "700",
   },
   counter: {
     ...Typography.industrialLabel,

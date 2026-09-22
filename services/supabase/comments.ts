@@ -10,10 +10,14 @@ export const commentsService = {
     return (data || []) as unknown as Comment[];
   },
 
-  async create(spotId: string, content: string): Promise<Comment> {
+  async create(
+    spotId: string,
+    content: string,
+    isAnonymous: boolean,
+  ): Promise<Comment> {
     const { data, error } = await supabase
       .from("comments")
-      .insert({ spot_id: spotId, content })
+      .insert({ spot_id: spotId, content, is_anonymous: isAnonymous })
       .select()
       .single();
     if (error) throw error;

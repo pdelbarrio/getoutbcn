@@ -127,6 +127,8 @@ export const t = {
   commentPlaceholder: 'Escriu un comentari...',
   commentSend: 'Enviar',
   commentAnonymous: 'Anònim',
+  commentAnonymousToggle: 'Comentar com a anònim',
+  commentsAs: 'Comentes com a:',
   commentDeleteTitle: 'Eliminar comentari',
   commentDeleteMessage: 'Segur que vols eliminar aquest comentari?',
   errorLoadingComments: 'No s\'han pogut carregar els comentaris',

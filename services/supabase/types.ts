@@ -30,6 +30,7 @@ export type Comment = {
   content: string;
   created_at: string;
   updated_at: string;
+  is_anonymous: boolean;
   username?: string | null;
   avatar_url?: string | null;
 };
