@@ -22,3 +22,14 @@ export type Profile = {
   role?: "user" | "admin";
   created_at: string;
 };
+
+export type Comment = {
+  id: string;
+  spot_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  username?: string | null;
+  avatar_url?: string | null;
+};

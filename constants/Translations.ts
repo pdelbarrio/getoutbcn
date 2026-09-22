@@ -120,6 +120,19 @@ export const t = {
   locationSelected: 'Ubicació seleccionada',
   locationCoordinatesSaved: 'Les coordenades s\'han desat als camps corresponents',
 
+  // Comments
+  comments: 'Comentaris',
+  commentEmpty: 'Sigues el primer en comentar',
+  commentPlaceholder: 'Escriu un comentari...',
+  commentSend: 'Enviar',
+  commentAnonymous: 'Anònim',
+  commentDeleteTitle: 'Eliminar comentari',
+  commentDeleteMessage: 'Segur que vols eliminar aquest comentari?',
+  errorLoadingComments: 'No s\'han pogut carregar els comentaris',
+  errorCreatingComment: 'No s\'ha pogut enviar el comentari',
+  errorUpdatingComment: 'No s\'ha pogut actualitzar el comentari',
+  errorDeletingComment: 'No s\'ha pogut eliminar el comentari',
+
   // Map
   selectLocationOnMap: 'SELECCIONA UBICACIÓ',
   tapMapToSelect: 'Toca en el mapa per triar les coordenades',

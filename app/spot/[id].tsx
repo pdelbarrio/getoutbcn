@@ -13,6 +13,7 @@ import CategoryTag from "../../components/CategoryTag";
 import DistrictButton from "../../components/DistrictButton";
 import TagButton from "../../components/TagButton";
 import MapViewWrapper from "../../components/MapViewWrapper";
+import CommentsSection from "../../components/CommentsSection";
 import AnimatedButton from "../../components/AnimatedButton";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
@@ -163,6 +164,8 @@ export default function SpotDetailScreen() {
         longitude={spot.longitude}
         name={spot.name}
       />
+
+      <CommentsSection spotId={spot.id} />
     </ScrollView>
   );
 }
