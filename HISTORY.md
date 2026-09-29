@@ -1,7 +1,3 @@
-Te he preparado la versión actualizada y definitiva de tu plan de reconstrucción. He revisado cada sección y corregido todas las referencias a versiones, comandos y dependencias para que estén alineadas con **Expo SDK 54**, que es la elección más estable y segura para tu entorno Windows.
-
-Puedes copiar y pegar este contenido en tu archivo `HISTORY.md` para tenerlo completamente listo.
-
 ````markdown
 # GetOutBCN — Historial del Proyecto
 
@@ -29,7 +25,7 @@ Puedes copiar y pegar este contenido en tu archivo `HISTORY.md` para tenerlo com
 
 ### Objetivo Final
 
-- App funcional para **portfolio** que puedas mostrar a recruiters.
+- App funcional para **portfolio**.
 - Stack **estable** sin problemas de dependencias.
 - Código **limpio** y bien documentado.
 - Oportunidad de **aprender Opencode** mientras construyes.
@@ -1106,15 +1102,15 @@ export default function ProfileScreen() {
    import * as WebBrowser from "expo-web-browser";
    import * as AuthSession from "expo-auth-session";
    import { supabase } from "./client";
-   
+
    WebBrowser.maybeCompleteAuthSession();
-   
+
    export const socialAuthService = {
      async signInWithGoogle(): Promise<void> {
        const redirectUri = AuthSession.makeRedirectUri({
          scheme: "getoutbcn", // Debe coincidir con el scheme en app.json
        });
-   
+
        const { data, error } = await supabase.auth.signInWithOAuth({
          provider: "google",
          options: {
@@ -1122,16 +1118,16 @@ export default function ProfileScreen() {
            skipBrowserRedirect: true,
          },
        });
-   
+
        if (error) throw error;
        if (!data.url)
          throw new Error("No se pudo obtener la URL de autenticación");
-   
+
        const result = await WebBrowser.openAuthSessionAsync(
          data.url,
          redirectUri,
        );
-   
+
        if (result.type === "success") {
          // La sesión se actualiza automáticamente en el cliente de Supabase
          // gracias a la configuración de redirectTo y la URL de callback.
@@ -1683,7 +1679,7 @@ supabase functions deploy generate-upload-url --project-ref tu-project-ref
 
 - Los botones de categorias y distritos de la pantalla principal deben poder seleccionarse con un click y deseseleccionarse con otro click (toggle), por ejemplo si se selecciona una categoria y luego un distrito, poder clicar al distrito de nuevo para que "se apague" y entoncer buscar todas las categorias sin filtrar por distrito, y viceversa.
 - Hay que corregir estéticamente el corazon de favoritos, poner otro icono, el de bookmark que tiene forma de punto de libro .
-- En general coger el diseño de stitch y ver en qué podemos mejorar para que se parezca más 
+- En general coger el diseño de stitch y ver en qué podemos mejorar para que se parezca más
 - https://stitch.withgoogle.com/projects/3943882300834945234?pli=1
 - La SpotCard, la que solo muestra foto, nombre y categoria/distrito, la que se ve en los listados de búsqueda, tiene un pequeño borde alrededor, ultrafino, lo justo para que se note un pequeño realce. Los botones de categoria y distrito tambien pueden tener un borde para que todo sea coherente.
 - El boton de favorito/like/bookmark en la pantalla de detalle no está bien situado abajo. Quizá en el frame superior, encima de la imagen, donde está l flecha que lleva a la pantalla principal, ahí podemos poner después de la flecha un 'Detall del lloc' luego un icono de compartir (valora si es posible compartir un spot fuera de la app) y ahi el botón/icono de bookmark.
@@ -1693,13 +1689,8 @@ supabase functions deploy generate-upload-url --project-ref tu-project-ref
 - Al ser una aplicación destinada al publico local de Barcelona, pasar a catalán todo lo que se pueda pasar (spot por 'lloc', cargando favoritos por 'carregant favorits').
 - Añadir un icono de lupa justo antes de la palabra 'CERCAR' en el botón de 'CERCAR' de la pantalla principal
 
-
-
 Pensar mejoras: Botón de 'Como llegar' que lea la ubicación actual y te diga como se llega al sitio
 Mejora con IA?
-
-
-
 
 ### Próximos Pasos Opcionales
 
@@ -1712,8 +1703,6 @@ Aunque el proyecto está completo según el plan, podrías considerar:
 5. Push Notifications: Para nuevos spots o favoritos cercanos
 6. Modo offline: Cache local con AsyncStorage
 7. Build de producción: EAS Build + Deploy en Play Store/App Store
-
-
 
 ---
 
@@ -1813,7 +1802,7 @@ Si encuentras problemas:
 **Versión:** 2.0  
 **Estado:** ✅ Listo para ejecutar
 
-```
+````
 
 ---
 
@@ -1843,8 +1832,10 @@ Funcionalidades implementadas después de completar el plan de reconstrucción (
 
 ```sql
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.comments TO anon, authenticated;
-```
+````
 
 **Lección:** RLS y GRANT son sistemas complementarios, no sustitutivos.
+
+```
 
 ```
